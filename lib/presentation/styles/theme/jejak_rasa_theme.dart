@@ -3,6 +3,8 @@ import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 import 'package:mobile_apps/presentation/styles/typography/jejak_rasa_text_style.dart';
 
 class JejakRasaTheme {
+  static double defaultPadding = 24.0;
+
   static TextTheme get _textThemeLight {
     return TextTheme(
       titleLarge: JejakRasaTextStyle.header.copyWith(

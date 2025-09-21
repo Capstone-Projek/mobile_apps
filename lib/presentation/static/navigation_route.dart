@@ -1,7 +1,8 @@
 enum NavigationRoute {
   splashRoute("/"),
   welcomeRoute("/welcome"),
-  mainRoute("main");
+  loginRoute("/login"),
+  mainRoute("/main");
 
   const NavigationRoute(this.path);
   final String path;
