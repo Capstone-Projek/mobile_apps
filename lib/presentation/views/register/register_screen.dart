@@ -3,20 +3,22 @@ import 'package:mobile_apps/core/utils/validator.dart';
 import 'package:mobile_apps/presentation/static/navigation_route.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
 import 'package:mobile_apps/presentation/widgets/button_join_widget.dart';
-import 'package:mobile_apps/presentation/widgets/button_navigate_widget.dart';
 import 'package:mobile_apps/presentation/widgets/input_widget.dart';
+import 'package:mobile_apps/presentation/widgets/button_navigate_widget.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _usernameController = TextEditingController();
+
+  final TextEditingController _emailController = TextEditingController();
 
   final TextEditingController _passwordController = TextEditingController();
 
@@ -53,15 +55,16 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  SizedBox(height: 20),
                   Text(
-                    "Mari memulai",
+                    "Bergabunglah Sekarang",
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
                   SizedBox(height: 6),
                   Text(
-                    "Perjalanan kita akan sangat panjang",
+                    "Mari memulai perjalanan bersama",
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onSecondary,
                     ),
@@ -72,17 +75,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       ButtonJoinWidget(
                         onTap: () {},
-                        icon: "assets/images/google_icon.png",
+                        icon: "assets/icons/google_icon.png",
                       ),
                       SizedBox(width: 25),
                       ButtonJoinWidget(
                         onTap: () {},
-                        icon: "assets/images/facebook_icon.png",
+                        icon: "assets/icons/facebook_icon.png",
                       ),
                       SizedBox(width: 25),
                       ButtonJoinWidget(
                         onTap: () {},
-                        icon: "assets/images/twitter_icon.png",
+                        icon: "assets/icons/twitter_icon.png",
                       ),
                     ],
                   ),
@@ -91,6 +94,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     key: _formKey,
                     child: Column(
                       children: [
+                        InputWidget(
+                          inputField: TextFormField(
+                            controller: _emailController,
+                            cursorColor: Theme.of(
+                              context,
+                            ).colorScheme.onPrimary,
+                            validator: emailValidator,
+                            decoration: customInputDecoration(
+                              context,
+                              "Email",
+                              prefixIcon: Icon(
+                                Icons.email,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                size: 30,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20),
                         InputWidget(
                           inputField: TextFormField(
                             controller: _usernameController,
@@ -147,11 +169,41 @@ class _LoginScreenState extends State<LoginScreen> {
                             onTap: () {
                               if (_formKey.currentState!.validate()) {}
                             },
-                            title: "M A S U K",
+                            title: "D A F T A R",
                           ),
                         ),
                         SizedBox(height: 40),
-                        
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Sudah punya akun?",
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary,
+                                  ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  NavigationRoute.loginRoute.path,
+                                );
+                              },
+                              child: Text(
+                                " Masuk",
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.secondary,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
