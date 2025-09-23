@@ -1,9 +1,11 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_apps/data/models/carousel_item_model.dart';
+import 'package:mobile_apps/data/models/recomendation_food_model.dart';
 import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
 import 'package:mobile_apps/presentation/widgets/button_filter_widget.dart';
+import 'package:mobile_apps/presentation/widgets/recommendation_food_widget.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -28,7 +30,44 @@ class _HomeScreenState extends State<HomeScreen> {
       address: "Jalan Sudirman",
     ),
   ];
-  
+  final List<RecomendationFoodModel> recomendations = [
+    RecomendationFoodModel(
+      image: 'assets/images/welcome_screen_1_background.jpeg',
+      tittle: "Siomay Bangka Balibul",
+      description:
+          "Warung siomay Bangka balibul enak pol saestu mboten ngapusi",
+    ),
+    RecomendationFoodModel(
+      image: 'assets/images/welcome_screen_1_background.jpeg',
+      tittle: "Siomay Bangka Balibul",
+      description:
+          "Warung siomay Bangka balibul enak pol saestu mboten ngapusi",
+    ),
+    RecomendationFoodModel(
+      image: 'assets/images/welcome_screen_1_background.jpeg',
+      tittle: "Siomay Bangka Balibul",
+      description:
+          "Warung siomay Bangka balibul enak pol saestu mboten ngapusi",
+    ),
+    RecomendationFoodModel(
+      image: 'assets/images/welcome_screen_1_background.jpeg',
+      tittle: "Siomay Bangka Balibul",
+      description:
+          "Warung siomay Bangka balibul enak pol saestu mboten ngapusi",
+    ),
+    RecomendationFoodModel(
+      image: 'assets/images/welcome_screen_1_background.jpeg',
+      tittle: "Siomay Bangka Balibul",
+      description:
+          "Warung siomay Bangka balibul enak pol saestu mboten ngapusi",
+    ),
+    RecomendationFoodModel(
+      image: 'assets/images/welcome_screen_1_background.jpeg',
+      tittle: "Siomay Bangka Balibul",
+      description:
+          "Warung siomay Bangka balibul enak pol saestu mboten ngapusi",
+    ),
+  ];
 
   Widget buildImage(CarouselItemModel item) {
     return Stack(
@@ -93,6 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.primary,
       body: SingleChildScrollView(
         child: Stack(
           children: [
@@ -104,7 +144,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: CarouselSlider.builder(
                     itemCount: items.length,
                     options: CarouselOptions(
-                      initialPage: 0,
                       height: 230,
                       autoPlay: true,
                       autoPlayInterval: Duration(seconds: 4),
@@ -161,9 +200,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                SizedBox(height: 20),
-                //widget recomendation food widget
-                
+                SizedBox(height: 25),
+                GridView.builder(
+                  physics: NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: JejakRasaTheme.defaultPadding,
+                  ),
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 230,
+                    crossAxisSpacing: 20,
+                    mainAxisSpacing: 20,
+                    childAspectRatio: 3 / 4.2,
+                  ),
+                  itemCount: recomendations.length,
+                  itemBuilder: (context, index) {
+                    final item = recomendations[index];
+                    return RecommendationFoodWidget(
+                      recomendationFoodModel: item,
+                      onTap: () {},
+                    );
+                  },
+                ),
+                SizedBox(height: 40),
               ],
             ),
             Positioned(
@@ -199,8 +258,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide:
-                          BorderSide.none, // biar ga ada garis border hitam
+                      borderSide: BorderSide(
+                        color: JejakRasaColor.tersier.color,
+                        width: 1.5,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: JejakRasaColor.tersier.color,
+                        width: 2,
+                      ),
                     ),
                   ),
                   onSubmitted: (value) {
