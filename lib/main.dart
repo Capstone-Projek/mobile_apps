@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_apps/core/service/local/shared_preferences_service.dart';
+import 'package:mobile_apps/core/utils/setting_state.dart';
+import 'package:mobile_apps/data/repository/setting_state_provider.dart';
+import 'package:mobile_apps/data/repository/shared_preferences_provider.dart';
 import 'package:mobile_apps/presentation/static/navigation_route.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
 import 'package:mobile_apps/presentation/viewmodels/index_nav_provider.dart';
@@ -8,12 +12,26 @@ import 'package:mobile_apps/presentation/views/register/register_screen.dart';
 import 'package:mobile_apps/presentation/views/splash/splash_screen.dart';
 import 'package:mobile_apps/presentation/views/welcome/welcome_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   String route = NavigationRoute.splashRoute.path;
+
+  final prefs = await SharedPreferences.getInstance();
+
   runApp(
     MultiProvider(
       providers: [
+        Provider(create: (context) => SharedPreferencesService(prefs)),
+        ChangeNotifierProvider(
+          create: (context) => SharedPreferencesProvider(
+            context.read<SharedPreferencesService>(),
+          ),
+        ),
+        ChangeNotifierProvider(create: (context) => SettingStateProvider()),
+
         ChangeNotifierProvider(create: (context) => IndexNavProvider()),
       ],
       child: MyApp(initialRoute: route),
@@ -21,25 +39,56 @@ void main() {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final String initialRoute;
   const MyApp({super.key, required this.initialRoute});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+
+    final settingStateProvider = context.read<SettingStateProvider>();
+    final sharedPreferencesProvider = context.read<SharedPreferencesProvider>();
+
+    Future.microtask(() async {
+      sharedPreferencesProvider.getIsDarkThemeValue();
+
+      final theme = sharedPreferencesProvider.isDarkTheme;
+
+      if (theme != null) {
+        settingStateProvider.isDarkThemeState = theme
+            ? SettingState.enable
+            : SettingState.dissable;
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Jejak Rasa',
-      debugShowCheckedModeBanner: false,
-      theme: JejakRasaTheme.lightTheme,
-      darkTheme: JejakRasaTheme.darkTheme,
-      themeMode: ThemeMode.light,
-      initialRoute: initialRoute,
-      routes: {
-        NavigationRoute.splashRoute.path: (context) => SplashScreen(),
-        NavigationRoute.welcomeRoute.path: (context) => WelcomeScreen(),
-        NavigationRoute.loginRoute.path: (context) => LoginScreen(),
-        NavigationRoute.registerRoute.path: (context) => RegisterScreen(),
-        NavigationRoute.mainRoute.path: (context) => MainScreen(),
+    return Consumer<SettingStateProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'Jejak Rasa',
+          debugShowCheckedModeBanner: false,
+          theme: JejakRasaTheme.lightTheme,
+          darkTheme: JejakRasaTheme.darkTheme,
+          themeMode: themeProvider.isDarkThemeState.isEnable
+              ? ThemeMode.dark
+              : ThemeMode.light,
+          initialRoute: widget.initialRoute,
+          routes: {
+            NavigationRoute.splashRoute.path: (context) => SplashScreen(),
+            NavigationRoute.welcomeRoute.path: (context) => WelcomeScreen(),
+            NavigationRoute.loginRoute.path: (context) => LoginScreen(),
+            NavigationRoute.registerRoute.path: (context) => RegisterScreen(),
+            NavigationRoute.mainRoute.path: (context) => MainScreen(),
+          },
+        );
       },
     );
   }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mobile_apps/data/repository/shared_preferences_provider.dart';
 import 'package:mobile_apps/presentation/static/navigation_route.dart';
 import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 import 'package:mobile_apps/presentation/widgets/button_navigate_widget.dart';
+import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -14,6 +16,7 @@ class WelcomeScreen extends StatefulWidget {
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
   final controller = PageController();
+
   @override
   void dispose() {
     super.dispose();
@@ -79,7 +82,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: MediaQuery.of(context).size.height * 0.50),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.45),
               Container(
                 margin: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
                 decoration: BoxDecoration(
@@ -101,7 +104,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       ),
                       SizedBox(height: 20),
                       Text(
-                        "Kenali cita rasa, sejarah, dan filosofi\nkuliner Bangka Belitung dalam satu \naplikasi.",
+                        "Kenali cita rasa, sejarah, dan filosofi kuliner Bangka Belitung dalam satu aplikasi.",
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: Colors.white,
                           letterSpacing: 1,
@@ -113,8 +116,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         child: ButtonNavigateWidget(
                           width: MediaQuery.of(context).size.width * 0.6,
                           height: MediaQuery.of(context).size.height * 0.07,
-                          onTap: () {
-                            Navigator.popAndPushNamed(
+                          onTap: () async {
+                            final sharedPreverencesProvider = context
+                                .read<SharedPreferencesProvider>();
+
+                            await sharedPreverencesProvider.setShowMain(true);
+
+                            Navigator.pushReplacementNamed(
                               context,
                               NavigationRoute.loginRoute.path,
                             );
@@ -122,7 +130,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           title: "M U L A I",
                         ),
                       ),
-                      SizedBox(height: 40),
+                      SizedBox(height: 20),
                     ],
                   ),
                 ),

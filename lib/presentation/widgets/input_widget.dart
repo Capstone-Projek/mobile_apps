@@ -24,10 +24,12 @@ InputDecoration customInputDecoration(
     prefixIcon: prefixIcon,
     suffixIcon: suffixIcon,
     hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-      color: Theme.of(context).colorScheme.onSecondary,
+      color: Theme.of(context).colorScheme.onPrimary,
     ),
     floatingLabelBehavior: FloatingLabelBehavior.never,
-    fillColor: Theme.of(context).colorScheme.primary,
+    fillColor: Theme.of(context).colorScheme.onSecondary,
+    prefixIconColor: Theme.of(context).colorScheme.onPrimary,
+    suffixIconColor: Theme.of(context).colorScheme.onPrimary,
     filled: true,
     contentPadding: const EdgeInsets.symmetric(vertical: 25),
     border: OutlineInputBorder(

@@ -174,25 +174,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       ButtonFilterWidget(
-                        width: MediaQuery.of(context).size.width / 4 - 24 * 2,
+                        width: MediaQuery.of(context).size.width / 4 - 24,
                         icon: "assets/icons/makan_berat_filter_icon.png",
                         title: "Makan\nBerat",
                         onTap: () {},
                       ),
                       ButtonFilterWidget(
-                        width: MediaQuery.of(context).size.width / 4 - 24 * 2,
+                        width: MediaQuery.of(context).size.width / 4 - 24,
                         icon: "assets/icons/makanan_ringan_filter_icon.png",
                         title: "Makan\nRingan",
                         onTap: () {},
                       ),
                       ButtonFilterWidget(
-                        width: MediaQuery.of(context).size.width / 4 - 24 * 2,
+                        width: MediaQuery.of(context).size.width / 4 - 24,
                         icon: "assets/icons/minuman_filter_icon.png",
                         title: "Minuman",
                         onTap: () {},
                       ),
                       ButtonFilterWidget(
-                        width: MediaQuery.of(context).size.width / 4 - 24 * 2,
+                        width: MediaQuery.of(context).size.width / 4 - 24,
                         icon: "assets/icons/snack_filter_icon.png",
                         title: "Snack",
                         onTap: () {},

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_apps/core/utils/setting_state.dart';
+import 'package:mobile_apps/data/repository/setting_state_provider.dart';
+import 'package:mobile_apps/data/repository/shared_preferences_provider.dart';
 import 'package:mobile_apps/presentation/static/navigation_route.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
 import 'package:mobile_apps/presentation/widgets/button_navigate_widget.dart';
 import 'package:mobile_apps/presentation/widgets/header_layout_widget.dart';
 import 'package:mobile_apps/presentation/widgets/setting_button_widget.dart';
-import 'package:mobile_apps/presentation/widgets/setting_switch_widget.dart';
+import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -17,7 +20,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool isDarkTheme = false;
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<SettingStateProvider>();
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
       body: SingleChildScrollView(
@@ -79,14 +89,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SettingButtonWidget(title: "Ubah Password", onTap: () {}),
                   SizedBox(height: 5),
                   HeaderLayoutWidget(title: "Preferensi"),
-                  SettingSwitchWidget(
-                    title: "Tema saat ini",
-                    isDarkTheme: isDarkTheme,
-                    onChanged: (value) {
-                      setState(() {
-                        isDarkTheme = value;
-                      });
-                    },
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7),
+                    margin: const EdgeInsets.only(bottom: 5, top: 7),
+                    width: double.infinity,
+                    height: 42,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Tema saat ini",
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                        ),
+                        Switch(
+                          value: themeProvider.isDarkThemeState.isEnable,
+                          onChanged: (value) async {
+                            themeProvider.isDarkThemeState = value
+                                ? SettingState.enable
+                                : SettingState.dissable;
+
+                            final scaffoldMessager = ScaffoldMessenger.of(
+                              context,
+                            );
+
+                            final sharedPreferencesProvider = context
+                                .read<SharedPreferencesProvider>();
+
+                            await sharedPreferencesProvider
+                                .saveIsDarkThemeValue(value);
+
+                            scaffoldMessager.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  sharedPreferencesProvider.message,
+                                ),
+                              ),
+                            );
+                          },
+                          activeColor: Colors.green,
+                          inactiveTrackColor: Colors.red,
+                          inactiveThumbColor: Theme.of(
+                            context,
+                          ).colorScheme.onSecondary,
+                          activeThumbColor: Theme.of(
+                            context,
+                          ).colorScheme.secondary,
+                        ),
+                      ],
+                    ),
                   ),
                   SizedBox(height: 5),
                   HeaderLayoutWidget(title: "Masukan Data Admin"),
@@ -96,7 +149,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ButtonNavigateWidget(
                     width: double.infinity,
                     height: 22,
-                    onTap: () {
+                    onTap: () async {
+                      final sharedPreverencesProvider = context
+                          .read<SharedPreferencesProvider>();
+
+                      await sharedPreverencesProvider.setShowMain(false);
+
                       Navigator.pushNamedAndRemoveUntil(
                         context,
                         NavigationRoute.loginRoute.path,
