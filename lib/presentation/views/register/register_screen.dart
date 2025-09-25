@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_apps/core/utils/validator.dart';
+import 'package:mobile_apps/data/models/user_register_request.dart';
 import 'package:mobile_apps/presentation/static/navigation_route.dart';
+import 'package:mobile_apps/presentation/static/register_result_state.dart';
+import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
+import 'package:mobile_apps/presentation/viewmodels/register/register_provider.dart';
 import 'package:mobile_apps/presentation/widgets/button_join_widget.dart';
 import 'package:mobile_apps/presentation/widgets/input_widget.dart';
 import 'package:mobile_apps/presentation/widgets/button_navigate_widget.dart';
+import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -22,194 +27,298 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   final TextEditingController _passwordController = TextEditingController();
 
-  bool _isVisible = false;
-
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<RegisterProvider>();
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
       body: Stack(
         children: [
-          Container(
-            width: double.infinity,
-            height: 200,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.only(top: 110),
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(
-              horizontal: JejakRasaTheme.defaultPadding,
-              vertical: 35,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(32),
-                topRight: Radius.circular(32),
+          Stack(
+            children: [
+              Container(
+                width: double.infinity,
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
               ),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 20),
-                  Text(
-                    "Bergabunglah Sekarang",
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
+              Container(
+                margin: EdgeInsets.only(top: 110),
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(
+                  horizontal: JejakRasaTheme.defaultPadding,
+                  vertical: 25,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    topRight: Radius.circular(32),
                   ),
-                  SizedBox(height: 6),
-                  Text(
-                    "Mari memulai perjalanan bersama",
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSecondary,
-                    ),
-                  ),
-                  SizedBox(height: 30),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ButtonJoinWidget(
-                        onTap: () {},
-                        icon: "assets/icons/google_icon.png",
-                      ),
-                      SizedBox(width: 25),
-                      ButtonJoinWidget(
-                        onTap: () {},
-                        icon: "assets/icons/facebook_icon.png",
-                      ),
-                      SizedBox(width: 25),
-                      ButtonJoinWidget(
-                        onTap: () {},
-                        icon: "assets/icons/twitter_icon.png",
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 50),
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        InputWidget(
-                          inputField: TextFormField(
-                            controller: _emailController,
-                            cursorColor: Theme.of(
-                              context,
-                            ).colorScheme.onPrimary,
-                            validator: emailValidator,
-                            decoration: customInputDecoration(
-                              context,
-                              "Email",
-                              prefixIcon: Icon(
-                                Icons.email,
-                                color: Theme.of(context).colorScheme.onPrimary,
-                                size: 30,
-                              ),
+                      SizedBox(height: 20),
+                      Text(
+                        "Bergabunglah Sekarang",
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: Theme.of(context).colorScheme.onPrimary,
                             ),
-                          ),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        "Mari memulai perjalanan bersama",
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSecondary,
                         ),
-                        SizedBox(height: 20),
-                        InputWidget(
-                          inputField: TextFormField(
-                            controller: _usernameController,
-                            cursorColor: Theme.of(
-                              context,
-                            ).colorScheme.onPrimary,
-                            validator: notEmptyValidator,
-                            decoration: customInputDecoration(
-                              context,
-                              "Username",
-                              prefixIcon: Icon(
-                                Icons.person,
-                                color: Theme.of(context).colorScheme.onPrimary,
-                                size: 30,
-                              ),
-                            ),
+                      ),
+                      SizedBox(height: 30),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          ButtonJoinWidget(
+                            onTap: () {},
+                            icon: "assets/icons/google_icon.png",
                           ),
-                        ),
-                        SizedBox(height: 20),
-                        InputWidget(
-                          inputField: TextFormField(
-                            controller: _passwordController,
-                            obscureText: _isVisible,
-                            cursorColor: Theme.of(
-                              context,
-                            ).colorScheme.onPrimary,
-                            validator: passConfirmValidator,
-                            decoration: customInputDecoration(
-                              context,
-                              "Password",
-                              prefixIcon: Icon(
-                                Icons.lock,
-                                color: Theme.of(context).colorScheme.onPrimary,
-                                size: 30,
-                              ),
-                              suffixIcon: IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _isVisible = !_isVisible;
-                                  });
-                                },
-                                icon: _isVisible
-                                    ? const Icon(Icons.visibility)
-                                    : const Icon(Icons.visibility_off),
-                              ),
-                            ),
+                          SizedBox(width: 25),
+                          ButtonJoinWidget(
+                            onTap: () {},
+                            icon: "assets/icons/facebook_icon.png",
                           ),
-                        ),
-                        SizedBox(height: 50),
-                        Center(
-                          child: ButtonNavigateWidget(
-                            width: MediaQuery.of(context).size.width * 0.6,
-                            height: MediaQuery.of(context).size.height * 0.07,
-                            onTap: () {
-                              if (_formKey.currentState!.validate()) {}
-                            },
-                            title: "D A F T A R",
+                          SizedBox(width: 25),
+                          ButtonJoinWidget(
+                            onTap: () {},
+                            icon: "assets/icons/twitter_icon.png",
                           ),
-                        ),
-                        SizedBox(height: 40),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        ],
+                      ),
+                      SizedBox(height: 50),
+                      Form(
+                        key: _formKey,
+                        child: Column(
                           children: [
-                            Text(
-                              "Sudah punya akun?",
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
+                            InputWidget(
+                              inputField: TextFormField(
+                                controller: _emailController,
+                                cursorColor: Theme.of(
+                                  context,
+                                ).colorScheme.onPrimary,
+                                validator: emailValidator,
+                                decoration: customInputDecoration(
+                                  context,
+                                  "Email",
+                                  prefixIcon: Icon(
+                                    Icons.email,
                                     color: Theme.of(
                                       context,
                                     ).colorScheme.onPrimary,
+                                    size: 30,
                                   ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  NavigationRoute.loginRoute.path,
-                                );
-                              },
-                              child: Text(
-                                " Masuk",
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.secondary,
-                                    ),
+                                ),
                               ),
+                            ),
+                            SizedBox(height: 20),
+                            InputWidget(
+                              inputField: TextFormField(
+                                controller: _usernameController,
+                                cursorColor: Theme.of(
+                                  context,
+                                ).colorScheme.onPrimary,
+                                validator: notEmptyValidator,
+                                decoration: customInputDecoration(
+                                  context,
+                                  "Username",
+                                  prefixIcon: Icon(
+                                    Icons.person,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary,
+                                    size: 30,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                            InputWidget(
+                              inputField: TextFormField(
+                                controller: _passwordController,
+                                obscureText: !provider.isPasswordVisible,
+                                cursorColor: Theme.of(
+                                  context,
+                                ).colorScheme.onPrimary,
+                                validator: passConfirmValidator,
+                                decoration: customInputDecoration(
+                                  context,
+                                  "Password",
+                                  prefixIcon: Icon(
+                                    Icons.lock,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary,
+                                    size: 30,
+                                  ),
+                                  suffixIcon: IconButton(
+                                    onPressed: () {
+                                      provider.togglePasswordVisibility();
+                                    },
+                                    icon: provider.isPasswordVisible
+                                        ? const Icon(Icons.visibility)
+                                        : const Icon(Icons.visibility_off),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 50),
+                            Center(
+                              child: ButtonNavigateWidget(
+                                width: MediaQuery.of(context).size.width * 0.6,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.07,
+                                onTap: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    context
+                                        .read<RegisterProvider>()
+                                        .registerUser(
+                                          UserRegisterRequest(
+                                            name: _usernameController.text,
+                                            email: _emailController.text,
+                                            password: _passwordController.text,
+                                          ),
+                                        );
+                                  }
+                                },
+                                title: "D A F T A R",
+                              ),
+                            ),
+                            SizedBox(height: 40),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Sudah punya akun?",
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onPrimary,
+                                      ),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      NavigationRoute.loginRoute.path,
+                                    );
+                                  },
+                                  child: Text(
+                                    " Masuk",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.secondary,
+                                        ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          Consumer<RegisterProvider>(
+            builder: (context, value, child) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (value.resultState is RegisterResultErrorState) {
+                  final message =
+                      (value.resultState as RegisterResultErrorState).error;
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Text("Register gagal"),
+                      content: Text(message),
+                      actions: [
+                        Center(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: JejakRasaColor.secondary.color,
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text(
+                              "Kembali",
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            ),
+                  );
+                  provider.resetState();
+                } else if (value.resultState is RegisterResultLoadedState) {
+                  final data =
+                      (value.resultState as RegisterResultLoadedState).data;
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Text("Register Berhasil"),
+                      content: Text(
+                        "Akun dengan email ${data.email} berhasil dibuat.",
+                      ),
+                      actions: [
+                        Center(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: JejakRasaColor.secondary.color,
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+                              Navigator.pushReplacementNamed(
+                                context,
+                                NavigationRoute.loginRoute.path,
+                              );
+                            },
+                            child: Text(
+                              "L O G I N",
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                  provider.resetState();
+                }
+              });
+
+              // Loading indicator
+              if (value.resultState is RegisterResultLoadingState) {
+                return Container(
+                  color: Colors.black26,
+                  child: const Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              return const SizedBox.shrink(); // Jika tidak loading, tidak tampilkan apa-apa
+            },
           ),
         ],
       ),

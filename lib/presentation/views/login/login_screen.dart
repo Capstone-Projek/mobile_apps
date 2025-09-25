@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
             width: double.infinity,
             padding: EdgeInsets.symmetric(
               horizontal: JejakRasaTheme.defaultPadding,
-              vertical: 35,
+              vertical: 25,
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
