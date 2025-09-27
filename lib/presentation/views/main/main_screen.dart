@@ -1,6 +1,6 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_apps/presentation/viewmodels/index_nav_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/main/index_nav_provider.dart';
 import 'package:mobile_apps/presentation/views/main/camera/camera_screen.dart';
 import 'package:mobile_apps/presentation/views/main/home/home_screen.dart';
 import 'package:mobile_apps/presentation/views/main/profile/profile_screen.dart';

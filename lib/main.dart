@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_apps/core/service/api/api_service.dart';
 import 'package:mobile_apps/core/service/local/shared_preferences_service.dart';
 import 'package:mobile_apps/core/utils/setting_state.dart';
-import 'package:mobile_apps/data/repository/setting_state_provider.dart';
-import 'package:mobile_apps/data/repository/shared_preferences_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/main/camera/camera_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/main/profile/setting_state_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/register/register_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/shared_preferences_provider.dart';
 import 'package:mobile_apps/presentation/static/navigation_route.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
-import 'package:mobile_apps/presentation/viewmodels/index_nav_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/main/index_nav_provider.dart';
 import 'package:mobile_apps/presentation/views/login/login_screen.dart';
 import 'package:mobile_apps/presentation/views/main/main_screen.dart';
 import 'package:mobile_apps/presentation/views/main/profile/account-information/change_password_screen.dart';
@@ -34,7 +37,13 @@ void main() async {
         ),
         ChangeNotifierProvider(create: (context) => SettingStateProvider()),
 
+        Provider(create: (context) => ApiService()),
+        ChangeNotifierProvider(
+          create: (context) => RegisterProvider(context.read<ApiService>()),
+        ),
+
         ChangeNotifierProvider(create: (context) => IndexNavProvider()),
+        ChangeNotifierProvider(create: (context) => CameraProvider()),
       ],
       child: MyApp(initialRoute: route),
     ),

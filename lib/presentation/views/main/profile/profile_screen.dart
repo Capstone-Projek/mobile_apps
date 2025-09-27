@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_apps/core/utils/setting_state.dart';
-import 'package:mobile_apps/data/repository/setting_state_provider.dart';
-import 'package:mobile_apps/data/repository/shared_preferences_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/main/profile/setting_state_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/shared_preferences_provider.dart';
 import 'package:mobile_apps/presentation/static/navigation_route.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
 import 'package:mobile_apps/presentation/widgets/button_navigate_widget.dart';
