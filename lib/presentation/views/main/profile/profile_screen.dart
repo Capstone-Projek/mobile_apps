@@ -64,29 +64,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                           textAlign: TextAlign.center,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.titleSmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                          ),
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
                         ),
                         Text(
                           "Dinusian@gmail.com",
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                           textAlign: TextAlign.center,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.displayLarge?.copyWith(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                          ),
+                          style: Theme.of(context).textTheme.displayLarge
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
                         ),
                       ],
                     ),
                   ),
                   SizedBox(height: 22),
                   HeaderLayoutWidget(title: "Informasi Akun"),
-                  SettingButtonWidget(title: "Ubah Profil", onTap: () {}),
+                  SettingButtonWidget(
+                    title: "Ubah Profil",
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        NavigationRoute.editProfileRoute.path,
+                      );
+                    },
+                  ),
                   SettingButtonWidget(
                     title: "Ubah Password",
                     onTap: () {
@@ -108,26 +114,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         Text(
                           "Tema saat ini: ${themeProvider.isDarkThemeState.isEnable ? "Gelap" : "Terang"}",
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
                         ),
                         Switch(
                           value: themeProvider.isDarkThemeState.isEnable,
                           onChanged: (value) async {
-                            themeProvider.isDarkThemeState =
-                                value
-                                    ? SettingState.enable
-                                    : SettingState.dissable;
+                            themeProvider.isDarkThemeState = value
+                                ? SettingState.enable
+                                : SettingState.dissable;
 
                             final scaffoldMessager = ScaffoldMessenger.of(
                               context,
                             );
 
-                            final sharedPreferencesProvider =
-                                context.read<SharedPreferencesProvider>();
+                            final sharedPreferencesProvider = context
+                                .read<SharedPreferencesProvider>();
 
                             await sharedPreferencesProvider
                                 .saveIsDarkThemeValue(value);
@@ -140,10 +144,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             );
                           },
-                          inactiveThumbColor:
-                              Theme.of(context).colorScheme.onSecondary,
-                          activeThumbColor:
-                              Theme.of(context).colorScheme.secondary,
+                          inactiveThumbColor: Theme.of(
+                            context,
+                          ).colorScheme.onSecondary,
+                          activeThumbColor: Theme.of(
+                            context,
+                          ).colorScheme.secondary,
                         ),
                       ],
                     ),
@@ -157,8 +163,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: double.infinity,
                     height: 32,
                     onTap: () async {
-                      final sharedPreverencesProvider =
-                          context.read<SharedPreferencesProvider>();
+                      final sharedPreverencesProvider = context
+                          .read<SharedPreferencesProvider>();
 
                       await sharedPreverencesProvider.setShowMain(false);
 
