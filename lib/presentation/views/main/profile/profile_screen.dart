@@ -64,21 +64,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleSmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
                         ),
-                        SizedBox(height: 5),
                         Text(
                           "Dinusian@gmail.com",
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.displayLarge
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.displayLarge?.copyWith(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
                         ),
                       ],
                     ),
@@ -86,7 +87,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SizedBox(height: 22),
                   HeaderLayoutWidget(title: "Informasi Akun"),
                   SettingButtonWidget(title: "Ubah Profil", onTap: () {}),
-                  SettingButtonWidget(title: "Ubah Password", onTap: () {}),
+                  SettingButtonWidget(
+                    title: "Ubah Password",
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        NavigationRoute.changePasswordRoute.path,
+                      );
+                    },
+                  ),
                   SizedBox(height: 5),
                   HeaderLayoutWidget(title: "Preferensi"),
                   Container(
@@ -98,25 +107,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Tema saat ini",
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
+                          "Tema saat ini: ${themeProvider.isDarkThemeState.isEnable ? "Gelap" : "Terang"}",
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
                         ),
                         Switch(
                           value: themeProvider.isDarkThemeState.isEnable,
                           onChanged: (value) async {
-                            themeProvider.isDarkThemeState = value
-                                ? SettingState.enable
-                                : SettingState.dissable;
+                            themeProvider.isDarkThemeState =
+                                value
+                                    ? SettingState.enable
+                                    : SettingState.dissable;
 
                             final scaffoldMessager = ScaffoldMessenger.of(
                               context,
                             );
 
-                            final sharedPreferencesProvider = context
-                                .read<SharedPreferencesProvider>();
+                            final sharedPreferencesProvider =
+                                context.read<SharedPreferencesProvider>();
 
                             await sharedPreferencesProvider
                                 .saveIsDarkThemeValue(value);
@@ -129,14 +140,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             );
                           },
-                          activeColor: Colors.green,
-                          inactiveTrackColor: Colors.red,
-                          inactiveThumbColor: Theme.of(
-                            context,
-                          ).colorScheme.onSecondary,
-                          activeThumbColor: Theme.of(
-                            context,
-                          ).colorScheme.secondary,
+                          inactiveThumbColor:
+                              Theme.of(context).colorScheme.onSecondary,
+                          activeThumbColor:
+                              Theme.of(context).colorScheme.secondary,
                         ),
                       ],
                     ),
@@ -148,10 +155,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SizedBox(height: 56),
                   ButtonNavigateWidget(
                     width: double.infinity,
-                    height: 22,
+                    height: 32,
                     onTap: () async {
-                      final sharedPreverencesProvider = context
-                          .read<SharedPreferencesProvider>();
+                      final sharedPreverencesProvider =
+                          context.read<SharedPreferencesProvider>();
 
                       await sharedPreverencesProvider.setShowMain(false);
 
@@ -161,7 +168,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         (route) => false,
                       );
                     },
-                    title: "K E L U A R",
+                    title: "Keluar",
                   ),
                   SizedBox(height: 40),
                 ],

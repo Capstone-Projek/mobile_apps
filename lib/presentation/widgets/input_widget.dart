@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 
-// ignore: must_be_immutable
 class InputWidget extends StatelessWidget {
-  Widget inputField;
+  final Widget inputField;
 
-  InputWidget({Key? key, required this.inputField}) : super(key: key);
+  const InputWidget({super.key, required this.inputField});
 
   @override
   Widget build(BuildContext context) {

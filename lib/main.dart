@@ -8,6 +8,7 @@ import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
 import 'package:mobile_apps/presentation/viewmodels/index_nav_provider.dart';
 import 'package:mobile_apps/presentation/views/login/login_screen.dart';
 import 'package:mobile_apps/presentation/views/main/main_screen.dart';
+import 'package:mobile_apps/presentation/views/main/profile/account-information/change_password_screen.dart';
 import 'package:mobile_apps/presentation/views/register/register_screen.dart';
 import 'package:mobile_apps/presentation/views/splash/splash_screen.dart';
 import 'package:mobile_apps/presentation/views/welcome/welcome_screen.dart';
@@ -26,9 +27,10 @@ void main() async {
       providers: [
         Provider(create: (context) => SharedPreferencesService(prefs)),
         ChangeNotifierProvider(
-          create: (context) => SharedPreferencesProvider(
-            context.read<SharedPreferencesService>(),
-          ),
+          create:
+              (context) => SharedPreferencesProvider(
+                context.read<SharedPreferencesService>(),
+              ),
         ),
         ChangeNotifierProvider(create: (context) => SettingStateProvider()),
 
@@ -61,9 +63,8 @@ class _MyAppState extends State<MyApp> {
       final theme = sharedPreferencesProvider.isDarkTheme;
 
       if (theme != null) {
-        settingStateProvider.isDarkThemeState = theme
-            ? SettingState.enable
-            : SettingState.dissable;
+        settingStateProvider.isDarkThemeState =
+            theme ? SettingState.enable : SettingState.dissable;
       }
     });
   }
@@ -77,9 +78,10 @@ class _MyAppState extends State<MyApp> {
           debugShowCheckedModeBanner: false,
           theme: JejakRasaTheme.lightTheme,
           darkTheme: JejakRasaTheme.darkTheme,
-          themeMode: themeProvider.isDarkThemeState.isEnable
-              ? ThemeMode.dark
-              : ThemeMode.light,
+          themeMode:
+              themeProvider.isDarkThemeState.isEnable
+                  ? ThemeMode.dark
+                  : ThemeMode.light,
           initialRoute: widget.initialRoute,
           routes: {
             NavigationRoute.splashRoute.path: (context) => SplashScreen(),
@@ -87,6 +89,8 @@ class _MyAppState extends State<MyApp> {
             NavigationRoute.loginRoute.path: (context) => LoginScreen(),
             NavigationRoute.registerRoute.path: (context) => RegisterScreen(),
             NavigationRoute.mainRoute.path: (context) => MainScreen(),
+            NavigationRoute.changePasswordRoute.path:
+                (context) => ChangePasswordScreen(),
           },
         );
       },

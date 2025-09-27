@@ -20,12 +20,12 @@ class ButtonNavigateWidget extends StatelessWidget {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: JejakRasaColor.secondary.color,
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.all(6),
         shadowColor: Colors.black,
         elevation: 5,
         minimumSize: Size(width, height),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadiusGeometry.circular(16),
+          borderRadius: BorderRadiusGeometry.circular(32),
         ),
       ),
       onPressed: onTap,
