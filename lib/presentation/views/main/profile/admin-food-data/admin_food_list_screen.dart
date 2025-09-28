@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_apps/presentation/static/navigation_route.dart';
 import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
 import 'package:mobile_apps/presentation/widgets/search_bar_widget.dart';
@@ -37,7 +38,10 @@ class _AdminFoodListScreenState extends State<AdminFoodListScreen> {
         foregroundColor: JejakRasaColor.primary.color,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
         onPressed: () {
-          // aksi
+          Navigator.pushNamed(
+            context,
+            NavigationRoute.createAdminFoodList.path,
+          );
         },
         child: const Icon(Icons.add),
       ),

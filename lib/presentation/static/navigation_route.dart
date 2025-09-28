@@ -6,6 +6,8 @@ enum NavigationRoute {
   mainRoute("/main"),
   changePasswordRoute("/changePassword"),
   adminFoodList("/adminFoodList"),
+  createAdminFoodList("/createAdminFoodList"),
+  editAdminFoodList("/editAdminFoodList"),
   editProfileRoute("/editProfile"),
   foodDetailRoute("/food-detail"),
   foodPlaceDetailRoute("/food-place-detail"),

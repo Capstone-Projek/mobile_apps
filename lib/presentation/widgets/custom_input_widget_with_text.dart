@@ -8,6 +8,7 @@ class CustomInputWidgetWithText extends StatefulWidget {
   final TextInputType keyboardType;
   final IconData? prefixIcon;
   final bool showTogglePassword;
+  final int maxLines;
 
   const CustomInputWidgetWithText({
     super.key,
@@ -18,6 +19,7 @@ class CustomInputWidgetWithText extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.prefixIcon,
     this.showTogglePassword = false,
+    this.maxLines = 1,
   });
 
   @override
@@ -46,6 +48,7 @@ class _CustomInputWidgetWithTextState extends State<CustomInputWidgetWithText> {
           obscureText: _isObscured,
           keyboardType: widget.keyboardType,
           cursorColor: Theme.of(context).colorScheme.onPrimary,
+          maxLines: widget.maxLines,
           decoration: InputDecoration(
             hintText: widget.hintText,
             contentPadding: const EdgeInsets.symmetric(
