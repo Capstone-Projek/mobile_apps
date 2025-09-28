@@ -218,7 +218,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     final item = recomendations[index];
                     return RecommendationFoodWidget(
                       recomendationFoodModel: item,
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/food-detail',
+                        );
+                      },
                     );
                   },
                 ),

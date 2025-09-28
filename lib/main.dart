@@ -16,6 +16,9 @@ import 'package:mobile_apps/presentation/views/main/profile/account-information/
 import 'package:mobile_apps/presentation/views/register/register_screen.dart';
 import 'package:mobile_apps/presentation/views/splash/splash_screen.dart';
 import 'package:mobile_apps/presentation/views/welcome/welcome_screen.dart';
+import 'package:mobile_apps/presentation/views/food_detail/food_detail_screen.dart';
+import 'package:mobile_apps/presentation/views/food_place_detail/food_place_detail_screen.dart';
+import 'package:mobile_apps/presentation/views/food_place/food_place_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -102,6 +105,9 @@ class _MyAppState extends State<MyApp> {
                 ChangePasswordScreen(),
             NavigationRoute.editProfileRoute.path: (context) =>
                 EditProfileScreen(),
+            NavigationRoute.foodDetailRoute.path: (context) => FoodDetailScreen(),
+            NavigationRoute.foodPlaceDetailRoute.path: (context) => FoodPlaceDetailScreen(),
+            NavigationRoute.foodPlaceScreenRoute.path: (context) => FoodPlaceScreen(),
           },
         );
       },
