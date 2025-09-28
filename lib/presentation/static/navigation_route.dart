@@ -6,7 +6,10 @@ enum NavigationRoute {
   mainRoute("/main"),
   changePasswordRoute("/changePassword"),
   adminFoodList("/adminFoodList"),
-  editProfileRoute("/editProfile");
+  editProfileRoute("/editProfile"),
+  foodDetailRoute("/food-detail"),
+  foodPlaceDetailRoute("/food-place-detail"),
+  foodPlaceScreenRoute("/food-place");
 
   const NavigationRoute(this.path);
   final String path;
