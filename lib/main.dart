@@ -13,6 +13,7 @@ import 'package:mobile_apps/presentation/views/login/login_screen.dart';
 import 'package:mobile_apps/presentation/views/main/main_screen.dart';
 import 'package:mobile_apps/presentation/views/main/profile/account-information/change_password_screen.dart';
 import 'package:mobile_apps/presentation/views/main/profile/account-information/edit_profile_screen.dart';
+import 'package:mobile_apps/presentation/views/main/profile/admin-food-data/admin_food_list_screen.dart';
 import 'package:mobile_apps/presentation/views/register/register_screen.dart';
 import 'package:mobile_apps/presentation/views/splash/splash_screen.dart';
 import 'package:mobile_apps/presentation/views/welcome/welcome_screen.dart';
@@ -102,6 +103,8 @@ class _MyAppState extends State<MyApp> {
                 ChangePasswordScreen(),
             NavigationRoute.editProfileRoute.path: (context) =>
                 EditProfileScreen(),
+            NavigationRoute.adminFoodList.path: (context) =>
+                AdminFoodListScreen(),
           },
         );
       },

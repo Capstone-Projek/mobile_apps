@@ -156,7 +156,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   SizedBox(height: 5),
                   HeaderLayoutWidget(title: "Masukan Data Admin"),
-                  SettingButtonWidget(title: "Data Makanan", onTap: () {}),
+                  SettingButtonWidget(
+                    title: "Data Makanan",
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        NavigationRoute.adminFoodList.path,
+                      );
+                    },
+                  ),
                   SettingButtonWidget(title: "Data Toko", onTap: () {}),
                   SizedBox(height: 56),
                   ButtonNavigateWidget(
