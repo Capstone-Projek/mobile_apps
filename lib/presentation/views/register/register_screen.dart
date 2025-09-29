@@ -1,24 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_apps/core/service/api/api_service.dart';
 import 'package:mobile_apps/core/utils/validator.dart';
-import 'package:mobile_apps/data/models/user_register_request.dart';
-import 'package:mobile_apps/presentation/static/navigation_route.dart';
-import 'package:mobile_apps/presentation/static/register_result_state.dart';
+import 'package:mobile_apps/data/models/auth/register/user_register_request.dart';
+import 'package:mobile_apps/presentation/static/main/navigation_route.dart';
+import 'package:mobile_apps/presentation/static/auth/register_state/register_result_state.dart';
 import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
-import 'package:mobile_apps/presentation/viewmodels/register/register_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/auth/register/register_provider.dart';
 import 'package:mobile_apps/presentation/widgets/button_join_widget.dart';
 import 'package:mobile_apps/presentation/widgets/input_widget.dart';
 import 'package:mobile_apps/presentation/widgets/button_navigate_widget.dart';
 import 'package:provider/provider.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (context) => RegisterProvider(context.read<ApiService>()),
+      child: const _BodyRegisterScreen(),
+    );
+  }
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _BodyRegisterScreen extends StatefulWidget {
+  const _BodyRegisterScreen();
+
+  @override
+  State<_BodyRegisterScreen> createState() => _BodyRegisterScreenState();
+}
+
+class _BodyRegisterScreenState extends State<_BodyRegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _usernameController = TextEditingController();
@@ -30,7 +43,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<RegisterProvider>();
-
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
       body: Stack(
@@ -185,9 +197,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         .read<RegisterProvider>()
                                         .registerUser(
                                           UserRegisterRequest(
-                                            name: _usernameController.text,
-                                            email: _emailController.text,
-                                            password: _passwordController.text,
+                                            name: _usernameController.text
+                                                .trim(),
+                                            email: _emailController.text.trim(),
+                                            password: _passwordController.text
+                                                .trim(),
                                           ),
                                         );
                                   }

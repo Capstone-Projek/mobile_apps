@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_apps/data/models/recomendation_food_model.dart';
+import 'package:mobile_apps/data/models/main/home/recomendation_food_model.dart';
 import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 
 class RecommendationFoodWidget extends StatelessWidget {

@@ -7,6 +7,11 @@ class SharedPreferencesService {
 
   static const String _keyShowMain = "MY_MAIN_SCREEN";
   static const String _keyIsDarkTheme = "MY_THEME";
+  
+  static const String _keyAccessToken = "MY _ACCESS_TOKEN";
+  static const String _keyRefreshToken = "MY_REFRESH_TOKEN";
+  static const String _keyShowEmail = "MY_SHOW_EMAIL";
+  static const String _keyShowUsername = "MY_SHOW_USERNAME";
 
   Future<void> showMainScreen(bool showMainScreen) async {
     try {
@@ -31,4 +36,6 @@ class SharedPreferencesService {
   bool getIsDarkThemeValue() {
     return _preferences.getBool(_keyIsDarkTheme) ?? false;
   }
+
+
 }
