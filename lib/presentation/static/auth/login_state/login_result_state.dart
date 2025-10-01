@@ -13,7 +13,13 @@ class LoginResultErrorState extends LoginResultState {
 }
 
 class LoginResultLoadedState extends LoginResultState {
-  final UserResponseModel data;
+  final UserResponseModel dataUser;
+  final String accessToken;
+  final String refreshToken;
 
-  LoginResultLoadedState({required this.data});
+  LoginResultLoadedState({
+    required this.dataUser,
+    required this.accessToken,
+    required this.refreshToken,
+  });
 }

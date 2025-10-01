@@ -28,7 +28,11 @@ class LoginProvider extends ChangeNotifier {
         _resultState = LoginResultErrorState(error: "Failed to login");
         notifyListeners();
       } else {
-        _resultState = LoginResultLoadedState(data: result.userResponseModel);
+        _resultState = LoginResultLoadedState(
+          dataUser: result.userResponseModel,
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+        );
         notifyListeners();
       }
     } catch (e) {

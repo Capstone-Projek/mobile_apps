@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_apps/core/service/api/api_service.dart';
+import 'package:mobile_apps/core/service/workManager/workmanager_service.dart';
 import 'package:mobile_apps/core/utils/validator.dart';
 import 'package:mobile_apps/data/models/auth/login/user_login_request.dart';
 import 'package:mobile_apps/presentation/static/auth/login_state/login_result_state.dart';
@@ -7,6 +8,7 @@ import 'package:mobile_apps/presentation/static/main/navigation_route.dart';
 import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
 import 'package:mobile_apps/presentation/viewmodels/auth/login/login_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/auth/user/shared_preferences_provider.dart';
 import 'package:mobile_apps/presentation/widgets/button_join_widget.dart';
 import 'package:mobile_apps/presentation/widgets/button_navigate_widget.dart';
 import 'package:mobile_apps/presentation/widgets/input_widget.dart';
@@ -259,14 +261,13 @@ class __BodyLoginScreenState extends State<_BodyLoginScreen> {
                   );
                   provider.resetState();
                 } else if (value.resultState is LoginResultLoadedState) {
-                  final data =
-                      (value.resultState as LoginResultLoadedState).data;
+                  final data = (value.resultState as LoginResultLoadedState);
                   showDialog(
                     context: context,
                     builder: (_) => AlertDialog(
                       title: const Text("Login Berhasil"),
                       content: Text(
-                        "Akun dengan email ${data.email} berhasil.",
+                        "Selemat datang kembali ${data.dataUser.name}",
                       ),
                       actions: [
                         Center(
@@ -274,7 +275,29 @@ class __BodyLoginScreenState extends State<_BodyLoginScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: JejakRasaColor.secondary.color,
                             ),
-                            onPressed: () {
+                            onPressed: () async {
+                              final sharedPreferencesProvider = context
+                                  .read<SharedPreferencesProvider>();
+
+                              await sharedPreferencesProvider.setShowEmail(
+                                data.dataUser.email,
+                              );
+                              await sharedPreferencesProvider.setShowUsername(
+                                data.dataUser.name,
+                              );
+
+                              await sharedPreferencesProvider.setAccessToken(
+                                data.accessToken,
+                              );
+                              await sharedPreferencesProvider.setRefreshToken(
+                                data.refreshToken,
+                              );
+
+                              // Mulai background refresh token
+                              final workmanagerService = WorkmanagerService();
+                              await workmanagerService.init();
+                              await workmanagerService.runPeriodicTask();
+
                               Navigator.pop(context);
                               Navigator.pushReplacementNamed(
                                 context,

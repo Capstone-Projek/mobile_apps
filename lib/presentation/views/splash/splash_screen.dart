@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mobile_apps/presentation/viewmodels/shared_preferences_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/auth/user/shared_preferences_provider.dart';
 import 'package:mobile_apps/presentation/static/main/navigation_route.dart';
 import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 import 'package:provider/provider.dart';
@@ -24,10 +24,22 @@ class _SplashScreenState extends State<SplashScreen> {
       final sharedPreverencesProvider = context
           .read<SharedPreferencesProvider>();
 
-      sharedPreverencesProvider.getShowMain();
+      sharedPreverencesProvider.getRefreshToken();
+      sharedPreverencesProvider.getAccessToken();
+      sharedPreverencesProvider.getshowUsername();
+      sharedPreverencesProvider.getshowEmail();
 
       Timer(Duration(seconds: 3), () {
-        if (sharedPreverencesProvider.showMainScreen == true) {
+        if (sharedPreverencesProvider.showUsername != "" ||
+            sharedPreverencesProvider.showUsername != "" ||
+            sharedPreverencesProvider.accessToken != "" ||
+            sharedPreverencesProvider.refreshToken != "") {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            NavigationRoute.mainRoute.path,
+            (route) => false,
+          );
+        } else if (sharedPreverencesProvider.showMainScreen == true) {
           Navigator.pushNamed(context, NavigationRoute.loginRoute.path);
         } else {
           Navigator.pushNamed(context, NavigationRoute.welcomeRoute.path);

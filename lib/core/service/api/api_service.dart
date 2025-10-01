@@ -39,4 +39,23 @@ class ApiService {
       throw Exception("Failed to login");
     }
   }
+
+  Future<String?> refreshToken(String refreshToken) async {
+    final response = await http.post(
+      Uri.parse("$_baseUrl/refresh-token"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"refreshToken": refreshToken}),
+    );
+
+    print(response.statusCode);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final Map<String, dynamic> body = jsonDecode(response.body);
+      final String accessToken = body['accessToken'];
+      print("Access Token berhasil diperoleh: $accessToken");
+      return accessToken;
+    } else {
+      throw Exception("Failed to refresh accessToken");
+    }
+  }
 }

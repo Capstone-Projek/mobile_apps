@@ -45,6 +45,11 @@ dependencies:
   shared_preferences: ^2.5.3
   smooth_page_indicator: ^1.2.1
   youtube_player_iframe: ^5.2.2
+  workmanager:
+   git:
+     url: https://github.com/fluttercommunity/flutter_workmanager.git
+     path: workmanager
+     ref: main
 
 dev_dependencies:
   flutter_lints: ^5.0.0

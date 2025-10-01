@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_apps/core/service/workManager/workmanager_service.dart';
 import 'package:mobile_apps/core/utils/setting_state.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/profile/setting_state_provider.dart';
-import 'package:mobile_apps/presentation/viewmodels/shared_preferences_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/auth/user/shared_preferences_provider.dart';
 import 'package:mobile_apps/presentation/static/main/navigation_route.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
 import 'package:mobile_apps/presentation/widgets/button_navigate_widget.dart';
@@ -175,6 +176,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           .read<SharedPreferencesProvider>();
 
                       await sharedPreverencesProvider.setShowMain(false);
+                      await sharedPreverencesProvider.setAccessToken("");
+                      await sharedPreverencesProvider.setRefreshToken("");
+                      await sharedPreverencesProvider.setShowUsername("");
+                      await sharedPreverencesProvider.setShowEmail("");
+
+                      final workmanagerService = WorkmanagerService();
+                      await workmanagerService.cancelAllTask(); // hentikan refresh token
 
                       Navigator.pushNamedAndRemoveUntil(
                         context,
