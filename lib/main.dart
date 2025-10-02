@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_apps/core/service/api/api_service.dart';
 import 'package:mobile_apps/core/service/local/shared_preferences_service.dart';
+import 'package:mobile_apps/core/service/workManager/workmanager_service.dart';
 import 'package:mobile_apps/core/utils/setting_state.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/camera/camera_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/profile/setting_state_provider.dart';
@@ -36,6 +37,7 @@ void main() async {
       providers: [
         Provider(create: (context) => SharedPreferencesService(prefs)),
         Provider(create: (context) => ApiService()),
+        Provider(create: (context) => WorkmanagerService()..init()),
 
         ChangeNotifierProvider(
           create: (context) => SharedPreferencesProvider(

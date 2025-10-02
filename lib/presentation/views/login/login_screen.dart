@@ -294,9 +294,10 @@ class __BodyLoginScreenState extends State<_BodyLoginScreen> {
                               );
 
                               // Mulai background refresh token
-                              final workmanagerService = WorkmanagerService();
-                              await workmanagerService.init();
-                              await workmanagerService.runPeriodicTask();
+                              // final workmanagerService = WorkmanagerService();
+                              // await workmanagerService.init();
+                              // await workmanagerService.runPeriodicTask();
+                              context.read<WorkmanagerService>().runPeriodicTask();
 
                               Navigator.pop(context);
                               Navigator.pushReplacementNamed(

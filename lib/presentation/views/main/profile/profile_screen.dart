@@ -181,8 +181,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       await sharedPreverencesProvider.setShowUsername("");
                       await sharedPreverencesProvider.setShowEmail("");
 
-                      final workmanagerService = WorkmanagerService();
-                      await workmanagerService.cancelAllTask(); // hentikan refresh token
+                      // final workmanagerService = WorkmanagerService();
+                      // await workmanagerService.cancelAllTask(); // hentikan refresh token
+                      context.read<WorkmanagerService>().cancelAllTask();
 
                       Navigator.pushNamedAndRemoveUntil(
                         context,

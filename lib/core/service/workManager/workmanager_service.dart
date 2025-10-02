@@ -48,7 +48,7 @@ class WorkmanagerService {
       MyWorkmanager.periodic.taskName,
       frequency: const Duration(minutes: 15),
       initialDelay: Duration.zero,
-      inputData: {},
+      constraints: Constraints(networkType: NetworkType.connected,),
     );
   }
 
