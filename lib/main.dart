@@ -42,7 +42,6 @@ void main() async {
         ChangeNotifierProvider(
           create: (context) => SharedPreferencesProvider(
             context.read<SharedPreferencesService>(),
-            context.read<ApiService>(),
           ),
         ),
         ChangeNotifierProvider(create: (context) => SettingStateProvider()),

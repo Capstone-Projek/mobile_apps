@@ -4,9 +4,8 @@ import 'package:mobile_apps/core/service/local/shared_preferences_service.dart';
 
 class SharedPreferencesProvider extends ChangeNotifier {
   final SharedPreferencesService _service;
-  final ApiService _api;
 
-  SharedPreferencesProvider(this._service, this._api);
+  SharedPreferencesProvider(this._service);
 
   String _message = "";
   String get message => _message;

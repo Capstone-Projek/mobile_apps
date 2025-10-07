@@ -7,32 +7,8 @@ import 'package:mobile_apps/presentation/views/main/home/home_screen.dart';
 import 'package:mobile_apps/presentation/views/main/profile/profile_screen.dart';
 import 'package:provider/provider.dart';
 
-class MainScreen extends StatefulWidget {
+class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
-
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  @override
-  void initState() {
-    super.initState();
-
-    Future.microtask(() {
-      final sharedProvider = context.read<SharedPreferencesProvider>();
-      sharedProvider.getRefreshToken();
-      sharedProvider.getAccessToken();
-      sharedProvider.getshowUsername();
-      sharedProvider.getshowEmail();
-      sharedProvider.syncToken();
-
-      print("data user ${sharedProvider.refreshToken}");
-      print("data user ${sharedProvider.showUsername}");
-      print("data user ${sharedProvider.accessToken}");
-      print("data user ${sharedProvider.showEmail}");
-    });
-  }
 
   @override
   Widget build(BuildContext context) {

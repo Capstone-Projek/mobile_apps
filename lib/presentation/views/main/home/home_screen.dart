@@ -4,8 +4,10 @@ import 'package:mobile_apps/data/models/main/home/carousel_item_model.dart';
 import 'package:mobile_apps/data/models/main/home/recomendation_food_model.dart';
 import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
+import 'package:mobile_apps/presentation/viewmodels/auth/user/shared_preferences_provider.dart';
 import 'package:mobile_apps/presentation/widgets/button_filter_widget.dart';
 import 'package:mobile_apps/presentation/widgets/recommendation_food_widget.dart';
+import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -68,6 +70,26 @@ class _HomeScreenState extends State<HomeScreen> {
           "Warung siomay Bangka balibul enak pol saestu mboten ngapusi",
     ),
   ];
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      final sharedProvider = context.read<SharedPreferencesProvider>();
+      sharedProvider.getRefreshToken();
+      sharedProvider.getAccessToken();
+      sharedProvider.getshowUsername();
+      sharedProvider.getshowEmail();
+      sharedProvider.syncToken();
+
+      print("data user ${sharedProvider.refreshToken}");
+      print("data user ${sharedProvider.showUsername}");
+      print("data user ${sharedProvider.accessToken}");
+      print("data user ${sharedProvider.showEmail}");
+
+      //get food
+    });
+  }
 
   Widget buildImage(CarouselItemModel item) {
     return Stack(
@@ -219,10 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     return RecommendationFoodWidget(
                       recomendationFoodModel: item,
                       onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          '/food-detail',
-                        );
+                        Navigator.pushNamed(context, '/food-detail');
                       },
                     );
                   },
