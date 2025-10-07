@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class JejakRasaTextStyle {
-  static TextStyle _commonStyle = GoogleFonts.poppins();
+  static final TextStyle _commonStyle = GoogleFonts.poppins();
 
   static TextStyle header = _commonStyle.copyWith(
     fontSize: 32,

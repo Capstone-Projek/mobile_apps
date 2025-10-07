@@ -5,7 +5,7 @@ import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 class RecommendationFoodWidget extends StatelessWidget {
   final RecomendationFoodModel recomendationFoodModel;
   final Function() onTap;
-  RecommendationFoodWidget({
+  const RecommendationFoodWidget({
     super.key,
     required this.recomendationFoodModel,
     required this.onTap,

@@ -189,13 +189,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       // final workmanagerService = WorkmanagerService();
                       // await workmanagerService.cancelAllTask(); // hentikan refresh token
-                      context.read<WorkmanagerService>().cancelAllTask();
+                      if (context.mounted) {
+                        context.read<WorkmanagerService>().cancelAllTask();
 
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        NavigationRoute.loginRoute.path,
-                        (route) => false,
-                      );
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          NavigationRoute.loginRoute.path,
+                          (route) => false,
+                        );
+                      }
                     },
                     title: "Keluar",
                   ),

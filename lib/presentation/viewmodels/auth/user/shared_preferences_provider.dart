@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_apps/core/service/api/api_service.dart';
 import 'package:mobile_apps/core/service/local/shared_preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

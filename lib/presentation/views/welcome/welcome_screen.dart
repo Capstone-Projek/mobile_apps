@@ -38,7 +38,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           fit: BoxFit.cover,
           alignment: Alignment.bottomCenter,
         ),
-        Container(color: Colors.black.withOpacity(0.4)),
+        Container(color: Colors.black.withValues(alpha: 0.4)),
         SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -77,7 +77,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           fit: BoxFit.cover,
           alignment: Alignment.bottomCenter,
         ),
-        Container(color: Colors.black.withOpacity(0.4)),
+        Container(color: Colors.black.withValues(alpha: 0.4)),
         SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -86,7 +86,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               Container(
                 margin: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.8),
+                  color: Colors.black.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Padding(
@@ -122,10 +122,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
                             await sharedPreverencesProvider.setShowMain(true);
 
-                            Navigator.pushReplacementNamed(
-                              context,
-                              NavigationRoute.loginRoute.path,
-                            );
+                            if (mounted) {
+                              Navigator.pushReplacementNamed(
+                                context,
+                                NavigationRoute.loginRoute.path,
+                              );
+                            }
                           },
                           title: "M U L A I",
                         ),

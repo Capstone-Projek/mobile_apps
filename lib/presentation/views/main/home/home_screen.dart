@@ -75,19 +75,14 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     Future.microtask(() {
-      final sharedProvider = context.read<SharedPreferencesProvider>();
-      sharedProvider.getRefreshToken();
-      sharedProvider.getAccessToken();
-      sharedProvider.getshowUsername();
-      sharedProvider.getshowEmail();
-      sharedProvider.syncToken();
-
-      print("data user ${sharedProvider.refreshToken}");
-      print("data user ${sharedProvider.showUsername}");
-      print("data user ${sharedProvider.accessToken}");
-      print("data user ${sharedProvider.showEmail}");
-
-      //get food
+      if (mounted) {
+        final sharedProvider = context.read<SharedPreferencesProvider>();
+        sharedProvider.getRefreshToken();
+        sharedProvider.getAccessToken();
+        sharedProvider.getshowUsername();
+        sharedProvider.getshowEmail();
+        sharedProvider.syncToken();
+      }
     });
   }
 
@@ -96,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
       fit: StackFit.expand,
       children: [
         Image.asset(item.image, fit: BoxFit.cover),
-        Container(color: Colors.black.withOpacity(0.3)),
+        Container(color: Colors.black.withValues(alpha: 0.3)),
         Positioned(
           left: JejakRasaTheme.defaultPadding,
           bottom: 36,

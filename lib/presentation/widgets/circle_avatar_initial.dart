@@ -9,14 +9,14 @@ class CircleAvatarInisial extends StatelessWidget {
   final double fontSize;
 
   const CircleAvatarInisial({
-    Key? key,
+    super.key,
     required this.name,
     this.size = 48,
     this.textColor,
     this.backgroundColor,
     this.imageUrl,
     this.fontSize = 18,
-  }) : super(key: key);
+  });
 
   /// Ambil inisial dari nama:
   /// - Jika 1 kata → 2 huruf pertama

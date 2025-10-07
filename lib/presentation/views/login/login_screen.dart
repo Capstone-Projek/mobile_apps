@@ -297,13 +297,17 @@ class __BodyLoginScreenState extends State<_BodyLoginScreen> {
                               // final workmanagerService = WorkmanagerService();
                               // await workmanagerService.init();
                               // await workmanagerService.runPeriodicTask();
-                              context.read<WorkmanagerService>().runPeriodicTask();
+                              if (context.mounted) {
+                                context
+                                    .read<WorkmanagerService>()
+                                    .runPeriodicTask();
 
-                              Navigator.pop(context);
-                              Navigator.pushReplacementNamed(
-                                context,
-                                NavigationRoute.mainRoute.path,
-                              );
+                                Navigator.pop(context);
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  NavigationRoute.mainRoute.path,
+                                );
+                              }
                             },
                             child: Text(
                               "M A S U K",
