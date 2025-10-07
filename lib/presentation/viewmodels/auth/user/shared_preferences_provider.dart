@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_apps/core/service/api/api_service.dart';
 import 'package:mobile_apps/core/service/local/shared_preferences_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPreferencesProvider extends ChangeNotifier {
   final SharedPreferencesService _service;
@@ -9,6 +10,7 @@ class SharedPreferencesProvider extends ChangeNotifier {
 
   String _message = "";
   String get message => _message;
+  late SharedPreferences _prefs;
 
   bool? _showMainScreen;
   bool? get showMainScreen => _showMainScreen;
@@ -142,6 +144,13 @@ class SharedPreferencesProvider extends ChangeNotifier {
     } catch (e) {
       _message = "Failed to get your showUsername";
     }
+    notifyListeners();
+  }
+
+  Future<void> loadUserData() async {
+    _prefs = await SharedPreferences.getInstance();
+    _showUsername = SharedPreferencesService(_prefs).getshowUsername();
+    _showEmail = SharedPreferencesService(_prefs).getShowEmail();
     notifyListeners();
   }
 
