@@ -7,7 +7,7 @@ import 'package:mobile_apps/data/models/auth/register/register_response_model.da
 import 'package:mobile_apps/data/models/auth/register/user_register_request.dart';
 
 class ApiService {
-  static const String _baseUrl = "http://ipComputer:4000/api";
+  static const String _baseUrl = "https://3ff020cd352b.ngrok-free.app/api";
 
   Future<RegisterResponseModel> registerUser(UserRegisterRequest user) async {
     final response = await http.post(
