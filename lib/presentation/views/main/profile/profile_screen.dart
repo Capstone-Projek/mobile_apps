@@ -26,7 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
 
     Future.microtask(() {
-      if (context.mounted) {
+      if (mounted) {
         context.read<SharedPreferencesProvider>().loadUserData();
       }
     });

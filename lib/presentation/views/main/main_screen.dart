@@ -20,12 +20,14 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
 
     Future.microtask(() {
-      final sharedProvider = context.read<SharedPreferencesProvider>();
-      sharedProvider.getRefreshToken();
-      sharedProvider.getAccessToken();
-      sharedProvider.getshowUsername();
-      sharedProvider.getshowEmail();
-      sharedProvider.syncToken();
+      if (mounted) {
+        final sharedProvider = context.read<SharedPreferencesProvider>();
+        sharedProvider.getRefreshToken();
+        sharedProvider.getAccessToken();
+        sharedProvider.getshowUsername();
+        sharedProvider.getshowEmail();
+        sharedProvider.syncToken();
+      }
     });
   }
 
