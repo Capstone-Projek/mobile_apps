@@ -26,11 +26,6 @@ class _MainScreenState extends State<MainScreen> {
       sharedProvider.getshowUsername();
       sharedProvider.getshowEmail();
       sharedProvider.syncToken();
-
-      print("data user ${sharedProvider.refreshToken}");
-      print("data user ${sharedProvider.showUsername}");
-      print("data user ${sharedProvider.accessToken}");
-      print("data user ${sharedProvider.showEmail}");
     });
   }
 

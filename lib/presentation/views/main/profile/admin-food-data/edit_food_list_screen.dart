@@ -24,7 +24,6 @@ class EditFoodListScreen extends StatelessWidget {
       body: FoodForm(
         initialData: foodData,
         onSubmit: (updatedData) {
-          print("Data baru: $updatedData");
           Navigator.pop(context, updatedData);
         },
       ),

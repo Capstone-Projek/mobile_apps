@@ -5,9 +5,11 @@ import 'package:mobile_apps/data/models/auth/login/login_response_model.dart';
 import 'package:mobile_apps/data/models/auth/login/user_login_request.dart';
 import 'package:mobile_apps/data/models/auth/register/register_response_model.dart';
 import 'package:mobile_apps/data/models/auth/register/user_register_request.dart';
+import 'package:mobile_apps/data/models/main/profile/change_profile_response_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String _baseUrl = "https://3ff020cd352b.ngrok-free.app/api";
+  static const String _baseUrl = "https://c4029c53f602.ngrok-free.app/api";
 
   Future<RegisterResponseModel> registerUser(UserRegisterRequest user) async {
     final response = await http.post(
@@ -16,7 +18,6 @@ class ApiService {
       body: jsonEncode(user.toJson()),
     );
 
-    print(response.statusCode);
     if (response.statusCode == 200 || response.statusCode == 201) {
       return RegisterResponseModel.fromJson(jsonDecode(response.body));
     } else {
@@ -30,8 +31,6 @@ class ApiService {
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(user.toJson()),
     );
-
-    print(response.statusCode);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       return LoginResponseModel.fromJson(jsonDecode(response.body));
@@ -47,8 +46,6 @@ class ApiService {
       body: jsonEncode({"refreshToken": refreshToken}),
     );
 
-    print(response.statusCode);
-
     if (response.statusCode == 200 || response.statusCode == 201) {
       final Map<String, dynamic> body = jsonDecode(response.body);
       final String accessToken = body['accessToken'];
@@ -56,6 +53,29 @@ class ApiService {
       return accessToken;
     } else {
       throw Exception("Failed to refresh accessToken");
+    }
+  }
+
+  Future<ChangeProfileResponseModel> changeProfile(
+    String name,
+    String email,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
+
+    final response = await http.put(
+      Uri.parse("$_baseUrl/user/profile"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      },
+      body: jsonEncode({"name": name, "email": email}),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return ChangeProfileResponseModel.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception("Failed to change profile");
     }
   }
 }

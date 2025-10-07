@@ -9,6 +9,7 @@ import 'package:mobile_apps/presentation/viewmodels/auth/user/shared_preferences
 import 'package:mobile_apps/presentation/static/main/navigation_route.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/index_nav_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/profile/change_profile_provider.dart';
 import 'package:mobile_apps/presentation/views/login/login_screen.dart';
 import 'package:mobile_apps/presentation/views/main/main_screen.dart';
 import 'package:mobile_apps/presentation/views/main/profile/account-information/change_password_screen.dart';
@@ -49,6 +50,10 @@ void main() async {
 
         ChangeNotifierProvider(create: (context) => IndexNavProvider()),
         ChangeNotifierProvider(create: (context) => CameraProvider()),
+        ChangeNotifierProvider(
+          create: (context) =>
+              ChangeProfileProvider(context.read<ApiService>()),
+        ),
       ],
       child: MyApp(initialRoute: route),
     ),

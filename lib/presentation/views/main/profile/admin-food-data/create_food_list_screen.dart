@@ -21,7 +21,6 @@ class CreateFoodListScreen extends StatelessWidget {
       ),
       body: FoodForm(
         onSubmit: (newData) {
-          print("Data baru dibuat: $newData");
           Navigator.pop(context, newData);
         },
       ),
