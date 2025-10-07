@@ -22,7 +22,6 @@ class LoginProvider extends ChangeNotifier {
       notifyListeners();
 
       final result = await _apiService.loginUser(user);
-      print(result.message);
 
       if (result.message != "Login berhasil!") {
         _resultState = LoginResultErrorState(error: "Failed to login");

@@ -267,7 +267,7 @@ class __BodyLoginScreenState extends State<_BodyLoginScreen> {
                     builder: (_) => AlertDialog(
                       title: const Text("Login Berhasil"),
                       content: Text(
-                        "Selemat datang kembali ${data.dataUser.name}",
+                        "Selamat datang kembali ${data.dataUser.name}",
                       ),
                       actions: [
                         Center(

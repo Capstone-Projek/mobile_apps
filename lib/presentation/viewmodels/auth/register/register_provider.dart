@@ -21,7 +21,6 @@ class RegisterProvider extends ChangeNotifier {
       notifyListeners();
 
       final result = await _apiService.registerUser(user);
-      print(result.message);
 
       if (result.message != "Registrasi berhasil!") {
         _resultState = RegisterResultErrorState(error: "Failed to register");
