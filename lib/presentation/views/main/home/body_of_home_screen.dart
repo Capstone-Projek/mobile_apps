@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:mobile_apps/data/models/main/home/carousel_item_model.dart';
 import 'package:mobile_apps/data/models/main/home/food_list_response_models.dart';
 import 'package:mobile_apps/data/models/main/home/recomendation_food_model.dart';
+import 'package:mobile_apps/presentation/static/main/beranda/search_food_result_state.dart';
 import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
+import 'package:mobile_apps/presentation/viewmodels/auth/user/shared_preferences_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/beranda/home_provider.dart';
 import 'package:mobile_apps/presentation/widgets/button_filter_widget.dart';
 import 'package:mobile_apps/presentation/widgets/recommendation_food_widget.dart';
+import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class BodyOfHomeScreen extends StatefulWidget {
@@ -140,6 +143,7 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final sharedProvider = context.read<SharedPreferencesProvider>();
     return SingleChildScrollView(
       child: Stack(
         children: [
@@ -208,27 +212,68 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
                 ),
               ),
               SizedBox(height: 25),
-              GridView.builder(
-                physics: NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                padding: EdgeInsets.symmetric(
-                  horizontal: JejakRasaTheme.defaultPadding,
-                ),
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 230,
-                  crossAxisSpacing: 20,
-                  mainAxisSpacing: 20,
-                  childAspectRatio: 3 / 4.2,
-                ),
-                itemCount: widget.foodList.length,
-                itemBuilder: (context, index) {
-                  final item = widget.foodList[index];
-                  return RecommendationFoodWidget(
-                    recomendationFoodModel: item,
-                    onTap: () {
-                      Navigator.pushNamed(context, '/food-detail');
-                    },
-                  );
+              Consumer<HomeProvider>(
+                builder: (context, value, child) {
+                  print("🔎 Search state sekarang: ${value.searchState}");
+                  return switch (value.searchState) {
+                    SearchFoodNoneState() => GridView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: JejakRasaTheme.defaultPadding,
+                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 230,
+                            crossAxisSpacing: 20,
+                            mainAxisSpacing: 20,
+                            childAspectRatio: 3 / 4.2,
+                          ),
+                      itemCount: widget.foodList.length,
+                      itemBuilder: (context, index) {
+                        final item = widget.foodList[index];
+                        print(item);
+                        return RecommendationFoodWidget(
+                          recomendationFoodModel: item,
+                          onTap: () {
+                            Navigator.pushNamed(context, '/food-detail');
+                          },
+                        );
+                      },
+                    ),
+                    SearchFoodErrorState(error: var message) => Center(
+                      child: Text(message),
+                    ),
+                    SearchFoodLoadingState() => Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                    SearchFoodLoadedState(data: var searchFood) =>
+                      GridView.builder(
+                        physics: NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: JejakRasaTheme.defaultPadding,
+                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 230,
+                              crossAxisSpacing: 20,
+                              mainAxisSpacing: 20,
+                              childAspectRatio: 3 / 4.2,
+                            ),
+                        itemCount: 1,
+                        itemBuilder: (context, index) {
+                          final item = searchFood;
+                          print(item);
+                          return RecommendationFoodWidget(
+                            recomendationFoodModel: item,
+                            onTap: () {
+                              Navigator.pushNamed(context, '/food-detail');
+                            },
+                          );
+                        },
+                      ),
+                  };
                 },
               ),
               SizedBox(height: 40),
@@ -281,15 +326,18 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
                   ),
                 ),
                 onSubmitted: (value) {
-                  // if (value.isNotEmpty) {
-                  //   context.read<RestaurantListProvider>().searchRestaurantList(
-                  //     value,
-                  //   );
-                  // } else {
-                  //   context
-                  //       .read<RestaurantListProvider>()
-                  //       .fetchRestaurantList();
-                  // }
+                  if (value.isNotEmpty) {
+                   
+                    context.read<HomeProvider>().searchFood(
+                      sharedProvider.accessToken!,
+                      value.trim(),
+                    );
+                  } else {
+                    // context.read<HomeProvider>().fetchFoodList(
+                    //   sharedProvider.accessToken!,
+                    // );
+                    context.read<HomeProvider>().resetSearch();
+                  }
                 },
               ),
             ),

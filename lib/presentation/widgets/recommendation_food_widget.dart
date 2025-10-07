@@ -13,9 +13,9 @@ class RecommendationFoodWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasImage = recomendationFoodModel.images.isNotEmpty;
+    final hasImage = recomendationFoodModel.images!.isNotEmpty;
     final imageUrl = hasImage
-        ? recomendationFoodModel.images.first.imageUrl
+        ? recomendationFoodModel.images!.first.imageUrl
         : null;
 
     return Material(

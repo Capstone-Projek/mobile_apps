@@ -1,21 +1,21 @@
 import 'package:mobile_apps/data/models/main/home/image_response_models.dart';
 
 class FoodListResponseModel {
-  int idFood;
-  String foodName;
-  String category;
-  String from;
-  String desc;
-  String history;
-  String material;
-  String recipes;
-  String timeCook;
-  String serving;
-  dynamic createAt;
-  dynamic updateAt;
-  dynamic deleteAt;
-  String vidioUrl;
-  List<FoodImage> images;
+  final int idFood;
+  final String foodName;
+  final String category;
+  final String from;
+  final String desc;
+  final String history;
+  final String material;
+  final String recipes;
+  final String timeCook;
+  final String serving;
+  final String? vidioUrl;
+  final DateTime? createAt;
+  final DateTime? updateAt;
+  final DateTime? deleteAt;
+  final List<FoodImage>? images;
 
   FoodListResponseModel({
     required this.idFood,
@@ -28,36 +28,40 @@ class FoodListResponseModel {
     required this.recipes,
     required this.timeCook,
     required this.serving,
-    required this.createAt,
-    required this.updateAt,
-    required this.deleteAt,
-    required this.vidioUrl,
-    required this.images,
+    this.vidioUrl,
+    this.createAt,
+    this.updateAt,
+    this.deleteAt,
+    this.images,
   });
 
-  factory FoodListResponseModel.fromJson(Map<String, dynamic> json) =>
-      FoodListResponseModel(
-        idFood: json["id_food"],
-        foodName: json["food_name"],
-        category: json["category"],
-        from: json["from"],
-        desc: json["desc"],
-        history: json["history"],
-        material: json["material"],
-        recipes: json["recipes"],
-        timeCook: json["time_cook"],
-        serving: json["serving"],
-        createAt: json["create_at"],
-        updateAt: json["update_at"],
-        deleteAt: json["delete_at"],
-        vidioUrl: json["vidio_url"],
-        images: json["images"] == null
-            ? []
-            : List<FoodImage>.from(
-                json["images"].map((x) => FoodImage.fromJson(x)),
-              ),
-      );
-
+  factory FoodListResponseModel.fromJson(Map<String, dynamic> json) {
+    return FoodListResponseModel(
+      idFood: json['id_food'] ?? 0,
+      foodName: json['food_name'] ?? '',
+      category: json['category'] ?? '',
+      from: json['from'] ?? '',
+      desc: json['desc'] ?? '',
+      history: json['history'] ?? '',
+      material: json['material'] ?? '',
+      recipes: json['recipes'] ?? '',
+      timeCook: json['time_cook'] ?? '',
+      serving: json['serving'] ?? '',
+      vidioUrl: json['vidio_url'],
+      createAt: json['create_at'] != null
+          ? DateTime.tryParse(json['create_at'])
+          : null,
+      updateAt: json['update_at'] != null
+          ? DateTime.tryParse(json['update_at'])
+          : null,
+      deleteAt: json['delete_at'] != null
+          ? DateTime.tryParse(json['delete_at'])
+          : null,
+      images: (json['images'] as List<dynamic>?)
+          ?.map((e) => FoodImage.fromJson(e))
+          .toList(),
+    );
+  }
   Map<String, dynamic> toJson() => {
     "id_food": idFood,
     "food_name": foodName,
@@ -73,6 +77,6 @@ class FoodListResponseModel {
     "update_at": updateAt,
     "delete_at": deleteAt,
     "vidio_url": vidioUrl,
-    "images": List<dynamic>.from(images.map((x) => x.toJson())),
+    "images": List<dynamic>.from(images!.map((x) => x.toJson())),
   };
 }
