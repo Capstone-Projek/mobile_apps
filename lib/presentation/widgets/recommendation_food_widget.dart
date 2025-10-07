@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_apps/data/models/main/home/recomendation_food_model.dart';
+import 'package:mobile_apps/data/models/main/home/food_list_response_models.dart';
 import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 
 class RecommendationFoodWidget extends StatelessWidget {
-  final RecomendationFoodModel recomendationFoodModel;
+  final FoodListResponseModel recomendationFoodModel;
   final Function() onTap;
   const RecommendationFoodWidget({
     super.key,
@@ -13,6 +13,11 @@ class RecommendationFoodWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasImage = recomendationFoodModel.images!.isNotEmpty;
+    final imageUrl = hasImage
+        ? recomendationFoodModel.images!.first.imageUrl
+        : null;
+
     return Material(
       color: Theme.of(context).colorScheme.onSecondary,
       borderRadius: BorderRadius.circular(10),
@@ -38,16 +43,39 @@ class RecommendationFoodWidget extends StatelessWidget {
                 flex: 3,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    recomendationFoodModel.image,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+                  child: hasImage
+                      ? Image.network(
+                          imageUrl!,
+                          width: double.infinity,
+                          fit: BoxFit.fill,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey[200],
+                              child: const Center(
+                                child: Icon(
+                                  Icons.broken_image,
+                                  color: Colors.grey,
+                                  size: 40,
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          color: Colors.grey[200],
+                          child: const Center(
+                            child: Icon(
+                              Icons.image,
+                              color: Colors.grey,
+                              size: 40,
+                            ),
+                          ),
+                        ),
                 ),
               ),
               SizedBox(height: 12),
               Text(
-                recomendationFoodModel.tittle,
+                recomendationFoodModel.foodName,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -59,7 +87,7 @@ class RecommendationFoodWidget extends StatelessWidget {
               Expanded(
                 flex: 2,
                 child: Text(
-                  recomendationFoodModel.description,
+                  recomendationFoodModel.desc,
                   style: Theme.of(context).textTheme.displaySmall?.copyWith(
                     color: Theme.of(context).colorScheme.primary,
                   ),
