@@ -5,6 +5,7 @@ import 'package:mobile_apps/data/models/auth/login/login_response_model.dart';
 import 'package:mobile_apps/data/models/auth/login/user_login_request.dart';
 import 'package:mobile_apps/data/models/auth/register/register_response_model.dart';
 import 'package:mobile_apps/data/models/auth/register/user_register_request.dart';
+import 'package:mobile_apps/data/models/main/home/food_list_response_models.dart';
 
 class ApiService {
   static const String _baseUrl = "https://3ff020cd352b.ngrok-free.app/api";
@@ -56,6 +57,26 @@ class ApiService {
       return accessToken;
     } else {
       throw Exception("Failed to refresh accessToken");
+    }
+  }
+
+  Future<List<FoodListResponseModel>> getFoodList(
+    final String accessToken,
+  ) async {
+    final response = await http.get(
+      Uri.parse("$_baseUrl/food"),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+
+      return data.map((e) => FoodListResponseModel.fromJson(e)).toList();
+    } else {
+      throw Exception("Failed to load food list");
     }
   }
 }
