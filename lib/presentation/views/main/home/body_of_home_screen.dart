@@ -2,7 +2,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_apps/data/models/main/home/carousel_item_model.dart';
 import 'package:mobile_apps/data/models/main/home/food_list_response_models.dart';
-import 'package:mobile_apps/data/models/main/home/recomendation_food_model.dart';
+import 'package:mobile_apps/data/models/main/home/resto_list_response_models.dart';
+import 'package:mobile_apps/presentation/static/main/beranda/resto_list_result_state.dart';
 import 'package:mobile_apps/presentation/static/main/beranda/search_food_result_state.dart';
 import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
@@ -16,11 +17,13 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 class BodyOfHomeScreen extends StatefulWidget {
   final List<FoodListResponseModel> foodList;
   final TextEditingController searchController;
+  final List<RestoListResponseModels> restoList;
 
   const BodyOfHomeScreen({
     super.key,
     required this.foodList,
     required this.searchController,
+    required this.restoList,
   });
 
   @override
@@ -28,82 +31,53 @@ class BodyOfHomeScreen extends StatefulWidget {
 }
 
 class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
-  int activeIndex = 0;
-
-  final List<CarouselItemModel> items = [
-    CarouselItemModel(
-      image: 'assets/images/welcome_screen_2_background.jpg',
-      name: "Warung Bu Dharmi",
-      address: "Jalan Ahmad Yani",
-    ),
-    CarouselItemModel(
-      image: 'assets/images/welcome_screen_1_background.jpeg',
-      name: "Warung Pak Budi",
-      address: "Jalan Sudirman",
-    ),
-  ];
-  final List<RecomendationFoodModel> recomendations = [
-    RecomendationFoodModel(
-      image: 'assets/images/welcome_screen_1_background.jpeg',
-      tittle: "Siomay Bangka Balibul",
-      description:
-          "Warung siomay Bangka balibul enak pol saestu mboten ngapusi",
-    ),
-    RecomendationFoodModel(
-      image: 'assets/images/welcome_screen_1_background.jpeg',
-      tittle: "Siomay Bangka Balibul",
-      description:
-          "Warung siomay Bangka balibul enak pol saestu mboten ngapusi",
-    ),
-    RecomendationFoodModel(
-      image: 'assets/images/welcome_screen_1_background.jpeg',
-      tittle: "Siomay Bangka Balibul",
-      description:
-          "Warung siomay Bangka balibul enak pol saestu mboten ngapusi",
-    ),
-    RecomendationFoodModel(
-      image: 'assets/images/welcome_screen_1_background.jpeg',
-      tittle: "Siomay Bangka Balibul",
-      description:
-          "Warung siomay Bangka balibul enak pol saestu mboten ngapusi",
-    ),
-    RecomendationFoodModel(
-      image: 'assets/images/welcome_screen_1_background.jpeg',
-      tittle: "Siomay Bangka Balibul",
-      description:
-          "Warung siomay Bangka balibul enak pol saestu mboten ngapusi",
-    ),
-    RecomendationFoodModel(
-      image: 'assets/images/welcome_screen_1_background.jpeg',
-      tittle: "Siomay Bangka Balibul",
-      description:
-          "Warung siomay Bangka balibul enak pol saestu mboten ngapusi",
-    ),
-  ];
-
-  Widget buildImage(CarouselItemModel item) {
+  Widget buildImage(RestoListResponseModels item) {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.asset(item.image, fit: BoxFit.cover),
+        if (item.images != null && item.images.imageUrl != "")
+          Image.network(
+            item.images.imageUrl!,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return const Center(child: CircularProgressIndicator());
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return const Center(
+                child: Icon(
+                  Icons.image_not_supported,
+                  color: Colors.grey,
+                  size: 64,
+                ),
+              );
+            },
+          )
+        else
+          const Center(child: Icon(Icons.image, color: Colors.grey, size: 64)),
         Container(color: Colors.black.withOpacity(0.3)),
         Positioned(
           left: JejakRasaTheme.defaultPadding,
-          bottom: 36,
+          right: JejakRasaTheme.defaultPadding,
+          bottom: 46,
           child: InkWell(
             onTap: () {},
             child: SizedBox(
+              width: double.infinity,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.name,
+                    item.food.foodName,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: JejakRasaColor.primary.color,
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                   const SizedBox(height: 6),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Icon(
                         Icons.location_on,
@@ -111,10 +85,14 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
                         size: 16,
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        item.address,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: JejakRasaColor.primary.color,
+                      Flexible(
+                        child: Text(
+                          item.address,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: JejakRasaColor.primary.color),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          softWrap: true,
                         ),
                       ),
                     ],
@@ -128,17 +106,21 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
     );
   }
 
-  Widget buildIndicator() => Center(
-    child: AnimatedSmoothIndicator(
-      activeIndex: activeIndex,
-      count: items.length,
-      effect: SlideEffect(
-        dotWidth: 15,
-        dotHeight: 15,
-        activeDotColor: Theme.of(context).colorScheme.secondary,
-        dotColor: Theme.of(context).colorScheme.onSecondary,
-      ),
-    ),
+  Widget buildIndicator(BuildContext context) => Consumer<HomeProvider>(
+    builder: (context, value, child) {
+      return Center(
+        child: AnimatedSmoothIndicator(
+          activeIndex: value.carouselActiveIndex,
+          count: (widget.restoList.length > 10 ? 10 : widget.restoList.length),
+          effect: SlideEffect(
+            dotWidth: 15,
+            dotHeight: 15,
+            activeDotColor: Theme.of(context).colorScheme.secondary,
+            dotColor: Theme.of(context).colorScheme.onSecondary,
+          ),
+        ),
+      );
+    },
   );
 
   @override
@@ -152,20 +134,27 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
               SizedBox(
                 width: double.infinity,
                 height: 230,
-                child: CarouselSlider.builder(
-                  itemCount: items.length,
-                  options: CarouselOptions(
-                    height: 230,
-                    autoPlay: true,
-                    autoPlayInterval: Duration(seconds: 4),
-                    viewportFraction: 1,
-                    enableInfiniteScroll: true,
-                    enlargeCenterPage: false,
-                    onPageChanged: (index, reason) =>
-                        setState(() => activeIndex = index),
-                  ),
-                  itemBuilder: (context, index, realIndex) {
-                    return buildImage(items[index]);
+                child: Builder(
+                  builder: (context) {
+                    final limitedList = widget.restoList.take(10).toList();
+
+                    return CarouselSlider.builder(
+                      itemCount: limitedList.length,
+                      options: CarouselOptions(
+                        height: 230,
+                        autoPlay: true,
+                        autoPlayInterval: Duration(seconds: 4),
+                        viewportFraction: 1,
+                        enableInfiniteScroll: true,
+                        enlargeCenterPage: false,
+                        onPageChanged: (index, reason) => context
+                            .read<HomeProvider>()
+                            .setCarouselIndex(index),
+                      ),
+                      itemBuilder: (context, index, realIndex) {
+                        return buildImage(limitedList[index]);
+                      },
+                    );
                   },
                 ),
               ),
@@ -283,7 +272,7 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
             left: JejakRasaTheme.defaultPadding,
             right: JejakRasaTheme.defaultPadding,
             top: 200,
-            child: buildIndicator(),
+            child: buildIndicator(context),
           ),
           Positioned(
             left: JejakRasaTheme.defaultPadding,
@@ -327,15 +316,11 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
                 ),
                 onSubmitted: (value) {
                   if (value.isNotEmpty) {
-                   
                     context.read<HomeProvider>().searchFood(
                       sharedProvider.accessToken!,
                       value.trim(),
                     );
                   } else {
-                    // context.read<HomeProvider>().fetchFoodList(
-                    //   sharedProvider.accessToken!,
-                    // );
                     context.read<HomeProvider>().resetSearch();
                   }
                 },

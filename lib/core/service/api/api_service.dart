@@ -7,11 +7,12 @@ import 'package:mobile_apps/data/models/auth/register/register_response_model.da
 import 'package:mobile_apps/data/models/auth/register/user_register_request.dart';
 import 'package:mobile_apps/data/models/main/food/food_model.dart';
 import 'package:mobile_apps/data/models/main/home/food_list_response_models.dart';
+import 'package:mobile_apps/data/models/main/home/resto_list_response_models.dart';
 import 'package:mobile_apps/data/models/main/profile/change_profile_response_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String _baseUrl = "https://c4029c53f602.ngrok-free.app/api";
+  static const String _baseUrl = "http://ipLocal:4000/api";
 
   Future<RegisterResponseModel> registerUser(UserRegisterRequest user) async {
     final response = await http.post(
@@ -72,6 +73,29 @@ class ApiService {
       final List<dynamic> data = jsonDecode(response.body);
 
       return data.map((e) => FoodListResponseModel.fromJson(e)).toList();
+    } else {
+      throw Exception("Failed to load food list");
+    }
+  }
+
+  Future<List<RestoListResponseModels>> getRestoList(
+    final String accessToken,
+  ) async {
+    final response = await http.get(
+      Uri.parse("$_baseUrl/food-place"),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    print("response resto list ${response.statusCode}");
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      print("data resto ${data.length}");
+
+      return data.map((e) => RestoListResponseModels.fromJson(e)).toList();
     } else {
       throw Exception("Failed to load food list");
     }
