@@ -86,7 +86,7 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
       fit: StackFit.expand,
       children: [
         Image.asset(item.image, fit: BoxFit.cover),
-        Container(color: Colors.black.withOpacity(0.3)),
+        Container(color: Colors.black.withValues(alpha: 0.3)),
         Positioned(
           left: JejakRasaTheme.defaultPadding,
           bottom: 36,
@@ -214,7 +214,6 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
               SizedBox(height: 25),
               Consumer<HomeProvider>(
                 builder: (context, value, child) {
-                  print("🔎 Search state sekarang: ${value.searchState}");
                   return switch (value.searchState) {
                     SearchFoodNoneState() => GridView.builder(
                       physics: NeverScrollableScrollPhysics(),
@@ -232,7 +231,6 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
                       itemCount: widget.foodList.length,
                       itemBuilder: (context, index) {
                         final item = widget.foodList[index];
-                        print(item);
                         return RecommendationFoodWidget(
                           recomendationFoodModel: item,
                           onTap: () {
@@ -264,7 +262,6 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
                         itemCount: 1,
                         itemBuilder: (context, index) {
                           final item = searchFood;
-                          print(item);
                           return RecommendationFoodWidget(
                             recomendationFoodModel: item,
                             onTap: () {
