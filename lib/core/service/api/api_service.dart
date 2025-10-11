@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -95,11 +96,11 @@ class ApiService {
       },
     );
 
-    print("response resto list ${response.statusCode}");
+    debugPrint("response resto list ${response.statusCode}");
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
-      print("data resto ${data.length}");
+      debugPrint("data resto ${data.length}");
 
       return data.map((e) => RestoListResponseModels.fromJson(e)).toList();
     } else {
@@ -321,7 +322,7 @@ class ApiService {
       return CreateFoodPlaceResponse.fromJson(jsonDecode(response.body));
     } else {
       // Lebih baik log atau cek body response untuk detail error dari server
-      print(
+      debugPrint(
         "Failed to create food place. Status: ${response.statusCode}, Body: ${response.body}",
       );
       throw Exception(
@@ -352,7 +353,7 @@ class ApiService {
       return body['message'] ?? "Food place deleted successfully";
     } else {
       // Log atau cek body response untuk detail error dari server
-      print(
+      debugPrint(
         "Failed to delete food place. Status: ${response.statusCode}, Body: ${response.body}",
       );
       throw Exception(
@@ -429,12 +430,125 @@ class ApiService {
       // Response body berisi object food place yang sudah diupdate
       return CreateFoodPlaceResponse.fromJson(jsonDecode(response.body));
     } else {
-      print(
+      debugPrint(
         "Failed to update food place. Status: ${response.statusCode}, Body: ${response.body}",
       );
       throw Exception(
         "Failed to update food place. Status code: ${response.statusCode}",
       );
+    }
+  }
+
+  Future<FoodModel> createFood({
+    required String foodName,
+    String? category,
+    String? from,
+    String? desc,
+    String? history,
+    String? material,
+    String? recipes,
+    String? timeCook,
+    String? serving,
+    String? vidioUrl,
+    List<File>? images,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('MY_ACCESS_TOKEN');
+
+    final uri = Uri.parse("$_baseUrl/food");
+    final request = http.MultipartRequest("POST", uri);
+
+    // Header
+    request.headers.addAll({
+      "Authorization": "Bearer $accessToken",
+      "Accept": "application/json",
+    });
+
+    // Form fields
+    request.fields['food_name'] = foodName;
+    if (category != null && category.isNotEmpty) {
+      request.fields['category'] = category;
+    }
+    if (from != null && from.isNotEmpty) {
+      request.fields['from'] = from;
+    }
+    if (desc != null && desc.isNotEmpty) {
+      request.fields['desc'] = desc;
+    }
+    if (history != null && history.isNotEmpty) {
+      request.fields['history'] = history;
+    }
+    if (material != null && material.isNotEmpty) {
+      request.fields['material'] = material;
+    }
+    if (recipes != null && recipes.isNotEmpty) {
+      request.fields['recipes'] = recipes;
+    }
+    if (timeCook != null && timeCook.isNotEmpty) {
+      request.fields['time_cook'] = timeCook;
+    }
+    if (serving != null && serving.isNotEmpty) {
+      request.fields['serving'] = serving;
+    }
+    if (vidioUrl != null && vidioUrl.isNotEmpty) {
+      request.fields['vidio_url'] = vidioUrl;
+    }
+
+    // Attach images (optional)
+    if (images != null && images.isNotEmpty) {
+      for (final image in images) {
+        final fileName = image.path.split('/').last;
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'images',
+            image.path,
+            filename: fileName,
+          ),
+        );
+      }
+    }
+
+    // Send request
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final Map<String, dynamic> body = jsonDecode(response.body);
+      return FoodModel.fromJson(body);
+    } else {
+      throw Exception(
+        "Gagal menambahkan makanan. [${response.statusCode}] ${response.body}",
+      );
+    }
+  }
+
+  Future<String> deleteFood(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('MY_ACCESS_TOKEN');
+
+    final response = await http.delete(
+      Uri.parse("$_baseUrl/food/$id"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+        "Accept": "application/json",
+      },
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      try {
+        final body = jsonDecode(response.body);
+        return body['message'] ?? "Food deleted successfully";
+      } catch (_) {
+        return "Food deleted successfully";
+      }
+    } else {
+      try {
+        final body = jsonDecode(response.body);
+        throw Exception(body['message'] ?? "Failed to delete food");
+      } catch (_) {
+        throw Exception("Failed to delete food: ${response.statusCode}");
+      }
     }
   }
 }

@@ -1,9 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_apps/data/models/main/home/carousel_item_model.dart';
 import 'package:mobile_apps/data/models/main/home/food_list_response_models.dart';
 import 'package:mobile_apps/data/models/main/home/resto_list_response_models.dart';
-import 'package:mobile_apps/presentation/static/main/beranda/resto_list_result_state.dart';
 import 'package:mobile_apps/presentation/static/main/beranda/search_food_result_state.dart';
 import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
@@ -55,7 +53,7 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
           )
         else
           const Center(child: Icon(Icons.image, color: Colors.grey, size: 64)),
-        Container(color: Colors.black.withOpacity(0.3)),
+        Container(color: Colors.black.withValues(alpha: 0.3)),
         Positioned(
           left: JejakRasaTheme.defaultPadding,
           right: JejakRasaTheme.defaultPadding,

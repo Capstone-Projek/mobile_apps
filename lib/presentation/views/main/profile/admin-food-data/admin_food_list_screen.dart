@@ -4,6 +4,7 @@ import 'package:mobile_apps/presentation/static/food/search_food_result_state.da
 import 'package:mobile_apps/presentation/static/main/navigation_route.dart';
 import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
+import 'package:mobile_apps/presentation/viewmodels/food/delete_food_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/food_list_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/search_food_provider.dart';
 import 'package:mobile_apps/presentation/widgets/search_bar_widget.dart';
@@ -38,7 +39,9 @@ class _AdminFoodListScreenState extends State<AdminFoodListScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
+      builder: (_) => Center(
+        child: CircularProgressIndicator(color: JejakRasaColor.secondary.color),
+      ),
     );
 
     try {
@@ -112,6 +115,7 @@ class _AdminFoodListScreenState extends State<AdminFoodListScreen> {
   @override
   Widget build(BuildContext context) {
     final foodProvider = context.watch<FoodListProvider>();
+    final deleteProvider = context.watch<DeleteFoodProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -134,25 +138,46 @@ class _AdminFoodListScreenState extends State<AdminFoodListScreen> {
           Navigator.pushNamed(
             context,
             NavigationRoute.createAdminFoodList.path,
-          );
+          ).then((_) {
+            if (context.mounted) {
+              context.read<FoodListProvider>().getFoodList();
+            }
+          });
         },
         child: const Icon(Icons.add),
       ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: JejakRasaTheme.defaultPadding,
-          vertical: JejakRasaTheme.defaultPadding,
-        ),
-        child: Column(
-          children: [
-            SearchBarWidget(
-              onSubmitted: _searchFood,
-              hintText: "Cari makanan (langsung menuju edit)",
-              searchController: _searchController,
-            ),
-            const SizedBox(height: 20),
-            Expanded(child: _buildFoodList(context, foodProvider)),
-          ],
+      body: RefreshIndicator(
+        color: JejakRasaColor.secondary.color,
+        onRefresh: () => context.read<FoodListProvider>().getFoodList(),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: JejakRasaTheme.defaultPadding,
+            vertical: JejakRasaTheme.defaultPadding,
+          ),
+          child: Column(
+            children: [
+              SearchBarWidget(
+                onSubmitted: _searchFood,
+                hintText: "Cari makanan (langsung menuju edit)",
+                searchController: _searchController,
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: Stack(
+                  children: [
+                    _buildFoodList(context, foodProvider),
+                    if (deleteProvider.isLoading)
+                      Container(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        child: Center(
+                          child: CircularProgressIndicator(color: JejakRasaColor.secondary.color),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -162,7 +187,9 @@ class _AdminFoodListScreenState extends State<AdminFoodListScreen> {
     final state = provider.resultState;
 
     if (state is FoodListResultLoadingState) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: CircularProgressIndicator(color: JejakRasaColor.secondary.color),
+      );
     } else if (state is FoodListResultErrorState) {
       return _buildErrorState(state.error, () => provider.getFoodList());
     } else if (state is FoodListResultLoadedState) {
@@ -387,9 +414,17 @@ class _AdminFoodListScreenState extends State<AdminFoodListScreen> {
             child: const Text('Batal'),
           ),
           ElevatedButton(
-            onPressed: () {
-              // context.read<FoodListProvider>().deleteFood(foodId);
-              Navigator.pop(context);
+            onPressed: () async {
+              await context.read<DeleteFoodProvider>().deleteFood(
+                context,
+                foodId,
+                foodName,
+              );
+
+              if (context.mounted) {
+                // Refresh daftar makanan setelah delete sukses
+                context.read<FoodListProvider>().getFoodList();
+              }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Hapus'),
