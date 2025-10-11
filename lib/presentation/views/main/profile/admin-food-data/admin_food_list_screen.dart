@@ -134,7 +134,11 @@ class _AdminFoodListScreenState extends State<AdminFoodListScreen> {
           Navigator.pushNamed(
             context,
             NavigationRoute.createAdminFoodList.path,
-          );
+          ).then((_) {
+            if (context.mounted) {
+              context.read<FoodListProvider>().getFoodList();
+            }
+          });
         },
         child: const Icon(Icons.add),
       ),
