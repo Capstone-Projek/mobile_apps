@@ -230,101 +230,185 @@ class __BodyLoginScreenState extends State<_BodyLoginScreen> {
 
           Consumer<LoginProvider>(
             builder: (context, value, child) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
                 if (value.resultState is LoginResultErrorState) {
                   final message =
                       (value.resultState as LoginResultErrorState).error;
+
                   showDialog(
                     context: context,
-                    builder: (_) => AlertDialog(
-                      title: const Text("Login gagal"),
-                      content: Text(message),
-                      actions: [
-                        Center(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: JejakRasaColor.secondary.color,
+                    barrierDismissible: false,
+                    builder: (_) => Dialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              color: Colors.redAccent,
+                              size: 60,
                             ),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: Text(
-                              "Kembali",
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
+                            const SizedBox(height: 16),
+                            Text(
+                              "Login Gagal",
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    color: Colors.redAccent,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              message,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: JejakRasaColor.primary.color,
+                                  ),
+                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      JejakRasaColor.secondary.color,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: Text(
+                                  "Kembali",
+                                  style: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.1,
+                                      ),
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   );
+
                   provider.resetState();
                 } else if (value.resultState is LoginResultLoadedState) {
                   final data = (value.resultState as LoginResultLoadedState);
+
                   showDialog(
                     context: context,
-                    builder: (_) => AlertDialog(
-                      title: const Text("Login Berhasil"),
-                      content: Text(
-                        "Selamat datang kembali ${data.dataUser.name}",
+                    barrierDismissible: false,
+                    builder: (_) => Dialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      actions: [
-                        Center(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: JejakRasaColor.secondary.color,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.check_circle_outline,
+                              color: Colors.greenAccent,
+                              size: 60,
                             ),
-                            onPressed: () async {
-                              final sharedPreferencesProvider = context
-                                  .read<SharedPreferencesProvider>();
+                            const SizedBox(height: 16),
+                            Text(
+                              "Login Berhasil",
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    color: JejakRasaColor.secondary.color,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              "Selamat datang kembali ${data.dataUser.name}",
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: JejakRasaColor.primary.color,
+                                  ),
+                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      JejakRasaColor.secondary.color,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  final sharedPreferencesProvider = context
+                                      .read<SharedPreferencesProvider>();
 
-                              await sharedPreferencesProvider.setShowEmail(
-                                data.dataUser.email,
-                              );
-                              await sharedPreferencesProvider.setShowUsername(
-                                data.dataUser.name,
-                              );
+                                  await sharedPreferencesProvider.setShowEmail(
+                                    data.dataUser.email,
+                                  );
+                                  await sharedPreferencesProvider
+                                      .setShowUsername(data.dataUser.name);
+                                  await sharedPreferencesProvider
+                                      .setAccessToken(data.accessToken);
+                                  await sharedPreferencesProvider
+                                      .setRefreshToken(data.refreshToken);
 
-                              await sharedPreferencesProvider.setAccessToken(
-                                data.accessToken,
-                              );
-                              await sharedPreferencesProvider.setRefreshToken(
-                                data.refreshToken,
-                              );
-
-                              // Mulai background refresh token
-                              // final workmanagerService = WorkmanagerService();
-                              // await workmanagerService.init();
-                              // await workmanagerService.runPeriodicTask();
-                              if (context.mounted) {
-                                context
-                                    .read<WorkmanagerService>()
-                                    .runPeriodicTask();
-
-                                Navigator.pop(context);
-                                Navigator.pushReplacementNamed(
-                                  context,
-                                  NavigationRoute.mainRoute.path,
-                                );
-                              }
-                            },
-                            child: Text(
-                              "M A S U K",
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
+                                  if (context.mounted) {
+                                    context
+                                        .read<WorkmanagerService>()
+                                        .runPeriodicTask();
+                                    Navigator.pop(context);
+                                    Navigator.pushReplacementNamed(
+                                      context,
+                                      NavigationRoute.mainRoute.path,
+                                    );
+                                  }
+                                },
+                                child: Text(
+                                  "M A S U K",
+                                  style: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.1,
+                                      ),
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   );
+
                   provider.resetState();
                 }
               });
 
-              // Loading indicator
               if (value.resultState is LoginResultLoadingState) {
                 return Container(
                   color: Colors.black26,
@@ -332,9 +416,10 @@ class __BodyLoginScreenState extends State<_BodyLoginScreen> {
                 );
               }
 
-              return const SizedBox.shrink(); // Jika tidak loading, tidak tampilkan apa-apa
+              return const SizedBox.shrink();
             },
           ),
+          
         ],
       ),
     );

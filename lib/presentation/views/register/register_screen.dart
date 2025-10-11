@@ -259,66 +259,160 @@ class _BodyRegisterScreenState extends State<_BodyRegisterScreen> {
                 if (value.resultState is RegisterResultErrorState) {
                   final message =
                       (value.resultState as RegisterResultErrorState).error;
+
                   showDialog(
                     context: context,
-                    builder: (_) => AlertDialog(
-                      title: const Text("Register gagal"),
-                      content: Text(message),
-                      actions: [
-                        Center(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: JejakRasaColor.secondary.color,
+                    barrierDismissible: false,
+                    builder: (_) => Dialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              color: Colors.redAccent,
+                              size: 60,
                             ),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: Text(
-                              "Kembali",
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
+                            const SizedBox(height: 16),
+                            Text(
+                              "Register Gagal",
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    color: Colors.redAccent,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              message,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: JejakRasaColor.primary.color,
+                                  ),
+                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      JejakRasaColor.secondary.color,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: Text(
+                                  "Kembali",
+                                  style: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.1,
+                                      ),
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   );
+
                   provider.resetState();
                 } else if (value.resultState is RegisterResultLoadedState) {
                   final data =
                       (value.resultState as RegisterResultLoadedState).data;
+
                   showDialog(
                     context: context,
-                    builder: (_) => AlertDialog(
-                      title: const Text("Register Berhasil"),
-                      content: Text(
-                        "Akun dengan email ${data.email} berhasil dibuat.",
+                    barrierDismissible: false,
+                    builder: (_) => Dialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      actions: [
-                        Center(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: JejakRasaColor.secondary.color,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.check_circle_outline,
+                              color: Colors.greenAccent,
+                              size: 60,
                             ),
-                            onPressed: () {
-                              Navigator.pop(context);
-                              Navigator.pushReplacementNamed(
-                                context,
-                                NavigationRoute.loginRoute.path,
-                              );
-                            },
-                            child: Text(
-                              "L O G I N",
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
+                            const SizedBox(height: 16),
+                            Text(
+                              "Register Berhasil",
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    color: JejakRasaColor.secondary.color,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              "Akun dengan email ${data.email} berhasil dibuat.",
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: JejakRasaColor.primary.color,
+                                  ),
+                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      JejakRasaColor.secondary.color,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  Navigator.pushReplacementNamed(
+                                    context,
+                                    NavigationRoute.loginRoute.path,
+                                  );
+                                },
+                                child: Text(
+                                  "L O G I N",
+                                  style: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.1,
+                                      ),
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   );
+
                   provider.resetState();
                 }
               });
@@ -334,6 +428,7 @@ class _BodyRegisterScreenState extends State<_BodyRegisterScreen> {
               return const SizedBox.shrink(); // Jika tidak loading, tidak tampilkan apa-apa
             },
           ),
+          
         ],
       ),
     );
