@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:mobile_apps/core/service/api/api_service.dart';
+import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 
 class CreateFoodProvider extends ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final ApiService _apiService;
+
+  CreateFoodProvider(this._apiService);
 
   bool isLoading = false;
 
@@ -34,14 +37,20 @@ class CreateFoodProvider extends ChangeNotifier {
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Berhasil menambahkan ${newFood.foodName}!")),
+          SnackBar(
+            content: Text("Berhasil menambahkan ${newFood.foodName}"),
+            backgroundColor: Colors.green,
+          ),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Gagal menambahkan makanan: $e")),
+          SnackBar(
+            content: Text("Gagal menambahkan makanan: $e"),
+            backgroundColor: JejakRasaColor.error.color,
+          ),
         );
       }
     } finally {

@@ -521,4 +521,34 @@ class ApiService {
       );
     }
   }
+
+  Future<String> deleteFood(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('MY_ACCESS_TOKEN');
+
+    final response = await http.delete(
+      Uri.parse("$_baseUrl/food/$id"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+        "Accept": "application/json",
+      },
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      try {
+        final body = jsonDecode(response.body);
+        return body['message'] ?? "Food deleted successfully";
+      } catch (_) {
+        return "Food deleted successfully";
+      }
+    } else {
+      try {
+        final body = jsonDecode(response.body);
+        throw Exception(body['message'] ?? "Failed to delete food");
+      } catch (_) {
+        throw Exception("Failed to delete food: ${response.statusCode}");
+      }
+    }
+  }
 }
