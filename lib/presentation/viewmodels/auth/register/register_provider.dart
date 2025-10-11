@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_apps/core/service/api/api_service.dart';
-import 'package:mobile_apps/data/models/user_register_request.dart';
-import 'package:mobile_apps/presentation/static/register_result_state.dart';
+import 'package:mobile_apps/data/models/auth/register/user_register_request.dart';
+import 'package:mobile_apps/presentation/static/auth/register_state/register_result_state.dart';
 
 class RegisterProvider extends ChangeNotifier {
   final ApiService _apiService;
@@ -21,7 +21,6 @@ class RegisterProvider extends ChangeNotifier {
       notifyListeners();
 
       final result = await _apiService.registerUser(user);
-      print(result.message);
 
       if (result.message != "Registrasi berhasil!") {
         _resultState = RegisterResultErrorState(error: "Failed to register");

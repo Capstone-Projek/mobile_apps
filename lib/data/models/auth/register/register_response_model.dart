@@ -1,4 +1,4 @@
-import 'package:mobile_apps/data/models/user_response_model.dart';
+import 'package:mobile_apps/data/models/auth/user/user_response_model.dart';
 
 class RegisterResponseModel {
   final String message;

@@ -1,18 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_apps/core/service/api/api_service.dart';
 import 'package:mobile_apps/core/service/local/shared_preferences_service.dart';
+import 'package:mobile_apps/core/service/workManager/workmanager_service.dart';
 import 'package:mobile_apps/core/utils/setting_state.dart';
+import 'package:mobile_apps/data/models/main/food/food_model.dart';
+import 'package:mobile_apps/presentation/viewmodels/food/food_list_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/food/search_food_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/main/beranda/home_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/camera/camera_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/profile/setting_state_provider.dart';
-import 'package:mobile_apps/presentation/viewmodels/register/register_provider.dart';
-import 'package:mobile_apps/presentation/viewmodels/shared_preferences_provider.dart';
-import 'package:mobile_apps/presentation/static/navigation_route.dart';
+import 'package:mobile_apps/presentation/viewmodels/auth/user/shared_preferences_provider.dart';
+import 'package:mobile_apps/presentation/static/main/navigation_route.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/index_nav_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/profile/change_profile_provider.dart';
 import 'package:mobile_apps/presentation/views/login/login_screen.dart';
 import 'package:mobile_apps/presentation/views/main/main_screen.dart';
 import 'package:mobile_apps/presentation/views/main/profile/account-information/change_password_screen.dart';
 import 'package:mobile_apps/presentation/views/main/profile/account-information/edit_profile_screen.dart';
+import 'package:mobile_apps/presentation/views/main/profile/admin-food-data/admin_food_list_screen.dart';
+import 'package:mobile_apps/presentation/views/main/profile/admin-food-data/create_food_list_screen.dart';
+import 'package:mobile_apps/presentation/views/main/profile/admin-food-data/edit_food_list_screen.dart';
 import 'package:mobile_apps/presentation/views/register/register_screen.dart';
 import 'package:mobile_apps/presentation/views/splash/splash_screen.dart';
 import 'package:mobile_apps/presentation/views/welcome/welcome_screen.dart';
@@ -33,20 +41,32 @@ void main() async {
     MultiProvider(
       providers: [
         Provider(create: (context) => SharedPreferencesService(prefs)),
+        Provider(create: (context) => ApiService()),
+        Provider(create: (context) => WorkmanagerService()..init()),
+
         ChangeNotifierProvider(
           create: (context) => SharedPreferencesProvider(
             context.read<SharedPreferencesService>(),
           ),
         ),
-        ChangeNotifierProvider(create: (context) => SettingStateProvider()),
 
-        Provider(create: (context) => ApiService()),
         ChangeNotifierProvider(
-          create: (context) => RegisterProvider(context.read<ApiService>()),
+          create: (context) => HomeProvider(context.read<ApiService>()),
         ),
+        ChangeNotifierProvider(create: (context) => SettingStateProvider()),
 
         ChangeNotifierProvider(create: (context) => IndexNavProvider()),
         ChangeNotifierProvider(create: (context) => CameraProvider()),
+        ChangeNotifierProvider(
+          create: (context) =>
+              ChangeProfileProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => FoodListProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => SearchFoodProvider(context.read<ApiService>()),
+        ),
       ],
       child: MyApp(initialRoute: route),
     ),
@@ -105,9 +125,25 @@ class _MyAppState extends State<MyApp> {
                 ChangePasswordScreen(),
             NavigationRoute.editProfileRoute.path: (context) =>
                 EditProfileScreen(),
-            NavigationRoute.foodDetailRoute.path: (context) => FoodDetailScreen(),
-            NavigationRoute.foodPlaceDetailRoute.path: (context) => FoodPlaceDetailScreen(),
-            NavigationRoute.foodPlaceScreenRoute.path: (context) => FoodPlaceScreen(),
+            NavigationRoute.foodDetailRoute.path: (context) =>
+                FoodDetailScreen(),
+            NavigationRoute.foodPlaceDetailRoute.path: (context) =>
+                FoodPlaceDetailScreen(),
+            NavigationRoute.foodPlaceScreenRoute.path: (context) =>
+                FoodPlaceScreen(),
+            NavigationRoute.adminFoodList.path: (context) =>
+                AdminFoodListScreen(),
+            NavigationRoute.createAdminFoodList.path: (context) =>
+                CreateFoodListScreen(),
+          },
+          onGenerateRoute: (settings) {
+            if (settings.name == NavigationRoute.editAdminFoodList.path) {
+              final args = settings.arguments as FoodModel;
+              return MaterialPageRoute(
+                builder: (context) => EditFoodListScreen(foodData: args),
+              );
+            }
+            return null;
           },
         );
       },

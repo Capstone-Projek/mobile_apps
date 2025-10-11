@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_apps/core/service/workManager/workmanager_service.dart';
 import 'package:mobile_apps/core/utils/setting_state.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/profile/setting_state_provider.dart';
-import 'package:mobile_apps/presentation/viewmodels/shared_preferences_provider.dart';
-import 'package:mobile_apps/presentation/static/navigation_route.dart';
+import 'package:mobile_apps/presentation/viewmodels/auth/user/shared_preferences_provider.dart';
+import 'package:mobile_apps/presentation/static/main/navigation_route.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
 import 'package:mobile_apps/presentation/widgets/button_navigate_widget.dart';
+import 'package:mobile_apps/presentation/widgets/circle_avatar_initial.dart';
 import 'package:mobile_apps/presentation/widgets/header_layout_widget.dart';
 import 'package:mobile_apps/presentation/widgets/setting_button_widget.dart';
 import 'package:provider/provider.dart';
@@ -22,11 +24,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+
+    Future.microtask(() {
+      if (mounted) {
+        context.read<SharedPreferencesProvider>().loadUserData();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<SettingStateProvider>();
+    final userProvider = context.watch<SharedPreferencesProvider>();
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
@@ -52,15 +61,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Center(
                     child: Column(
                       children: [
-                        CircleAvatar(
-                          radius: 60,
-                          backgroundImage: AssetImage(
-                            "assets/images/welcome_screen_1_background.jpeg",
-                          ),
+                        CircleAvatarInisial(
+                          name: userProvider.showUsername ?? "User",
+                          size: 90,
                         ),
                         SizedBox(height: 15),
                         Text(
-                          "Dinusian",
+                          userProvider.showUsername ?? "Pengguna",
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                           textAlign: TextAlign.center,
@@ -70,7 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                         ),
                         Text(
-                          "Dinusian@gmail.com",
+                          userProvider.showEmail ?? "example@gmail.com",
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                           textAlign: TextAlign.center,
@@ -156,7 +163,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   SizedBox(height: 5),
                   HeaderLayoutWidget(title: "Masukan Data Admin"),
-                  SettingButtonWidget(title: "Data Makanan", onTap: () {}),
+                  SettingButtonWidget(
+                    title: "Data Makanan",
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        NavigationRoute.adminFoodList.path,
+                      );
+                    },
+                  ),
                   SettingButtonWidget(title: "Data Toko", onTap: () {}),
                   SizedBox(height: 56),
                   ButtonNavigateWidget(
@@ -167,12 +182,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           .read<SharedPreferencesProvider>();
 
                       await sharedPreverencesProvider.setShowMain(false);
+                      await sharedPreverencesProvider.setAccessToken("");
+                      await sharedPreverencesProvider.setRefreshToken("");
+                      await sharedPreverencesProvider.setShowUsername("");
+                      await sharedPreverencesProvider.setShowEmail("");
 
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        NavigationRoute.loginRoute.path,
-                        (route) => false,
-                      );
+                      // final workmanagerService = WorkmanagerService();
+                      // await workmanagerService.cancelAllTask(); // hentikan refresh token
+                      if (context.mounted) {
+                        context.read<WorkmanagerService>().cancelAllTask();
+
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          NavigationRoute.loginRoute.path,
+                          (route) => false,
+                        );
+                      }
                     },
                     title: "Keluar",
                   ),
