@@ -4,7 +4,8 @@ import '../../../core/service/api/api_service.dart';
 import '../../../data/models/main/resto/resto_food_model.dart';
 
 class MapViewModel extends ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final ApiService _apiService;
+  MapViewModel({required ApiService apiService}) : _apiService = apiService; // Ganti konstruktor
 
   List<RestoPlaceModel> _foodPlaces = [];
   List<RestoPlaceModel> get foodPlaces => _foodPlaces;

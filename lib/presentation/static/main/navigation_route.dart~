@@ -12,8 +12,7 @@ enum NavigationRoute {
   foodDetailRoute("/food-detail"),
   foodPlaceDetailRoute("/food-place-detail"),
   foodPlaceScreenRoute("/food-place"),
-  mapFoodPlaceRoute("/map-food-place"),
-  editFoodPlaceRoute("/edit-food-place");
+  mapFoodPlaceRoute("/map-food-place");
 
 
   const NavigationRoute(this.path);
