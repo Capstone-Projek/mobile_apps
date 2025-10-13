@@ -1,5 +1,5 @@
 class FoodImageModel {
-  final int idImage;
+  final int? idImage;
   final int idFood;
   final String imageUrl;
   final DateTime? createAt;
@@ -7,7 +7,7 @@ class FoodImageModel {
   final DateTime? deleteAt;
 
   FoodImageModel({
-    required this.idImage,
+    this.idImage,
     required this.idFood,
     required this.imageUrl,
     this.createAt,
@@ -17,7 +17,7 @@ class FoodImageModel {
 
   factory FoodImageModel.fromJson(Map<String, dynamic> json) {
     return FoodImageModel(
-      idImage: json['id_image'] as int,
+      idImage: json['id_image'] ?? 0,
       idFood: json['id_food'] as int,
       imageUrl: json['image_url'] as String,
       createAt: json['create_at'] != null

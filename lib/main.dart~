@@ -13,9 +13,6 @@ import 'package:mobile_apps/presentation/static/main/navigation_route.dart';
 import 'package:mobile_apps/presentation/styles/theme/jejak_rasa_theme.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/index_nav_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/profile/change_profile_provider.dart';
-import 'package:mobile_apps/presentation/viewmodels/resto/food_place_detail_view_model.dart';
-import 'package:mobile_apps/presentation/viewmodels/resto/resto_food_viewmodel.dart';
-import 'package:mobile_apps/presentation/viewmodels/resto/update_food_place_viewmodel.dart';
 import 'package:mobile_apps/presentation/views/login/login_screen.dart';
 import 'package:mobile_apps/presentation/views/main/main_screen.dart';
 import 'package:mobile_apps/presentation/views/main/profile/account-information/change_password_screen.dart';
@@ -24,8 +21,6 @@ import 'package:mobile_apps/presentation/views/main/profile/admin-food-data/admi
 import 'package:mobile_apps/presentation/views/main/profile/admin-food-data/create_food_list_screen.dart';
 import 'package:mobile_apps/presentation/views/main/profile/admin-food-data/edit_food_list_screen.dart';
 import 'package:mobile_apps/presentation/views/register/register_screen.dart';
-import 'package:mobile_apps/presentation/views/resto_food/edit_food_place_screen.dart';
-import 'package:mobile_apps/presentation/views/resto_food/map_screen.dart';
 import 'package:mobile_apps/presentation/views/splash/splash_screen.dart';
 import 'package:mobile_apps/presentation/views/welcome/welcome_screen.dart';
 import 'package:mobile_apps/presentation/views/food_detail/food_detail_screen.dart';
@@ -47,13 +42,6 @@ void main() async {
         Provider(create: (context) => SharedPreferencesService(prefs)),
         Provider(create: (context) => ApiService()),
         Provider(create: (context) => WorkmanagerService()..init()),
-
-        ChangeNotifierProvider(
-          create: (context) => MapViewModel(apiService: context.read<ApiService>()),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => FoodPlaceDetailViewModel(apiService: context.read<ApiService>()),
-        ),
 
         ChangeNotifierProvider(
           create: (context) => SharedPreferencesProvider(
@@ -78,8 +66,6 @@ void main() async {
         ChangeNotifierProvider(
           create: (context) => SearchFoodProvider(context.read<ApiService>()),
         ),
-
-        ChangeNotifierProvider(create: (context) => UpdateFoodPlaceViewModel(context.read<ApiService>()))
       ],
       child: MyApp(initialRoute: route),
     ),
@@ -148,11 +134,6 @@ class _MyAppState extends State<MyApp> {
                 AdminFoodListScreen(),
             NavigationRoute.createAdminFoodList.path: (context) =>
                 CreateFoodListScreen(),
-            NavigationRoute.mapFoodPlaceRoute.path: (context) =>
-                MapScreen(),
-            NavigationRoute.editFoodPlaceRoute.path: (context) =>
-                EditFoodPlaceScreen(), // Ganti dengan class screen Anda
-
           },
           onGenerateRoute: (settings) {
             if (settings.name == NavigationRoute.editAdminFoodList.path) {

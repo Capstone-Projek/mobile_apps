@@ -37,28 +37,33 @@ class FoodModel {
 
   factory FoodModel.fromJson(Map<String, dynamic> json) {
     return FoodModel(
-      idFood: json['id_food'] as int,
-      foodName: json['food_name'] as String,
-      category: json['category'] as String,
-      from: json['from'] as String,
-      desc: json['desc'] as String,
-      history: json['history'] as String,
-      material: json['material'] as String,
-      recipes: json['recipes'] as String,
-      timeCook: json['time_cook'] as String,
-      serving: json['serving'] as String,
-      createAt: json['create_at'] != null
-          ? DateTime.parse(json['create_at'])
+      idFood: json['id_food'] is int
+          ? json['id_food']
+          : int.tryParse(json['id_food']?.toString() ?? '0') ?? 0,
+      foodName: json['food_name']?.toString() ?? '',
+      category: json['category']?.toString() ?? '',
+      from: json['from']?.toString() ?? '',
+      desc: json['desc']?.toString() ?? '',
+      history: json['history']?.toString() ?? '',
+      material: json['material']?.toString() ?? '',
+      recipes: json['recipes']?.toString() ?? '',
+      timeCook: json['time_cook']?.toString() ?? '',
+      serving: json['serving']?.toString() ?? '',
+      createAt:
+          json['create_at'] != null && json['create_at'].toString().isNotEmpty
+          ? DateTime.tryParse(json['create_at'].toString())
           : null,
-      updateAt: json['update_at'] != null
-          ? DateTime.parse(json['update_at'])
+      updateAt:
+          json['update_at'] != null && json['update_at'].toString().isNotEmpty
+          ? DateTime.tryParse(json['update_at'].toString())
           : null,
-      deleteAt: json['delete_at'] != null
-          ? DateTime.parse(json['delete_at'])
+      deleteAt:
+          json['delete_at'] != null && json['delete_at'].toString().isNotEmpty
+          ? DateTime.tryParse(json['delete_at'].toString())
           : null,
-      vidioUrl: json['vidio_url'] as String,
+      vidioUrl: json['vidio_url']?.toString() ?? '',
       images:
-          (json['images'] as List<dynamic>?)
+          (json['images'] as List?)
               ?.map((e) => FoodImageModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -85,15 +90,12 @@ class FoodModel {
     };
   }
 
-  List<String> getMaterialList() {
-    return material.split(',').map((e) => e.trim()).toList();
-  }
+  List<String> getMaterialList() =>
+      material.split(',').map((e) => e.trim()).toList();
 
-  List<String> getRecipeSteps() {
-    return recipes.split(',').map((e) => e.trim()).toList();
-  }
+  List<String> getRecipeSteps() =>
+      recipes.split(',').map((e) => e.trim()).toList();
 
-  String? getFirstImageUrl() {
-    return images.isNotEmpty ? images.first.imageUrl : null;
-  }
+  String? getFirstImageUrl() =>
+      images.isNotEmpty ? images.first.imageUrl : null;
 }

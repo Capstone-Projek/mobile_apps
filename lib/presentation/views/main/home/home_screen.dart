@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_apps/data/models/main/home/food_list_response_models.dart';
 import 'package:mobile_apps/presentation/static/main/beranda/food_list_resul_state.dart';
 import 'package:mobile_apps/presentation/static/main/beranda/resto_list_result_state.dart';
 import 'package:mobile_apps/presentation/viewmodels/auth/user/shared_preferences_provider.dart';
@@ -57,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
               : [];
 
           // ✅ Debug print seluruh list
-          print("Resto list length: ${restoList.length}");
+          debugPrint("Resto list length: ${restoList.length}");
 
           return switch (value.resultState) {
             FoodListLoadingState() => const Center(

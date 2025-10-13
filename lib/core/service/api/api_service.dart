@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:mobile_apps/data/models/auth/login/login_response_model.dart';
@@ -18,7 +19,7 @@ import '../../../data/models/main/resto/food_place_search_response.dart';
 import '../../../data/models/main/resto/resto_food_model.dart';
 
 class ApiService {
-  static const String _baseUrl = "https://843065016ae1.ngrok-free.app/api";
+  static const String _baseUrl = "https://8fa7114e6551.ngrok-free.app/api";
 
   Future<RegisterResponseModel> registerUser(UserRegisterRequest user) async {
     final response = await http.post(
@@ -364,7 +365,7 @@ class ApiService {
       throw Exception("Access Token not found. Please login.");
     }
 
-    final uri = Uri.parse("$_baseUrl/edit-food-place/$id");
+    final uri = Uri.parse("$_baseUrl/food-place/$id");
 
     // Menggunakan PUT method untuk update
     final requestBody = http.MultipartRequest('PUT', uri)
@@ -420,6 +421,119 @@ class ApiService {
     } else {
       print("Failed to update food place. Status: ${response.statusCode}, Body: ${response.body}");
       throw Exception("Failed to update food place. Status code: ${response.statusCode}");
+    }
+  }
+
+  Future<FoodModel> createFood({
+    required String foodName,
+    String? category,
+    String? from,
+    String? desc,
+    String? history,
+    String? material,
+    String? recipes,
+    String? timeCook,
+    String? serving,
+    String? vidioUrl,
+    List<File>? images,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('MY_ACCESS_TOKEN');
+
+    final uri = Uri.parse("$_baseUrl/food");
+    final request = http.MultipartRequest("POST", uri);
+
+    // Header
+    request.headers.addAll({
+      "Authorization": "Bearer $accessToken",
+      "Accept": "application/json",
+    });
+
+    // Form fields
+    request.fields['food_name'] = foodName;
+    if (category != null && category.isNotEmpty) {
+      request.fields['category'] = category;
+    }
+    if (from != null && from.isNotEmpty) {
+      request.fields['from'] = from;
+    }
+    if (desc != null && desc.isNotEmpty) {
+      request.fields['desc'] = desc;
+    }
+    if (history != null && history.isNotEmpty) {
+      request.fields['history'] = history;
+    }
+    if (material != null && material.isNotEmpty) {
+      request.fields['material'] = material;
+    }
+    if (recipes != null && recipes.isNotEmpty) {
+      request.fields['recipes'] = recipes;
+    }
+    if (timeCook != null && timeCook.isNotEmpty) {
+      request.fields['time_cook'] = timeCook;
+    }
+    if (serving != null && serving.isNotEmpty) {
+      request.fields['serving'] = serving;
+    }
+    if (vidioUrl != null && vidioUrl.isNotEmpty) {
+      request.fields['vidio_url'] = vidioUrl;
+    }
+
+    // Attach images (optional)
+    if (images != null && images.isNotEmpty) {
+      for (final image in images) {
+        final fileName = image.path.split('/').last;
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'images',
+            image.path,
+            filename: fileName,
+          ),
+        );
+      }
+    }
+
+    // Send request
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final Map<String, dynamic> body = jsonDecode(response.body);
+      return FoodModel.fromJson(body);
+    } else {
+      throw Exception(
+        "Gagal menambahkan makanan. [${response.statusCode}] ${response.body}",
+      );
+    }
+  }
+
+  Future<String> deleteFood(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('MY_ACCESS_TOKEN');
+
+    final response = await http.delete(
+      Uri.parse("$_baseUrl/food/$id"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+        "Accept": "application/json",
+      },
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      try {
+        final body = jsonDecode(response.body);
+        return body['message'] ?? "Food deleted successfully";
+      } catch (_) {
+        return "Food deleted successfully";
+      }
+    } else {
+      try {
+        final body = jsonDecode(response.body);
+        throw Exception(body['message'] ?? "Failed to delete food");
+      } catch (_) {
+        throw Exception("Failed to delete food: ${response.statusCode}");
+      }
     }
   }
 

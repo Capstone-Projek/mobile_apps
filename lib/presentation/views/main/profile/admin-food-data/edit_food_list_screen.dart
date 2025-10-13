@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_apps/data/models/main/food/food_model.dart';
 import 'package:mobile_apps/presentation/widgets/food_form_widget.dart';
 
 class EditFoodListScreen extends StatelessWidget {
-  final Map<String, dynamic> foodData;
+  final FoodModel foodData;
 
   const EditFoodListScreen({super.key, required this.foodData});
 

@@ -25,7 +25,7 @@ class CustomDropdownWithTextWidget extends StatelessWidget {
         Text(label, style: Theme.of(context).textTheme.bodyMedium),
         const SizedBox(height: 8),
         DropdownButtonFormField2<String>(
-          value: value,
+          value: items.contains(value) ? value : null,
           isExpanded: true,
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(vertical: 14),

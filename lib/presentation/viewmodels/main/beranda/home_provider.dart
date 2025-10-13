@@ -51,7 +51,7 @@ class HomeProvider extends ChangeNotifier {
 
       if (result.isNotEmpty) {
         _restoState = RestoListLoadedState(data: result);
-        print("dari provider ${result.length}");
+        debugPrint("dari provider ${result.length}");
       } else {
         _restoState = RestoListErrorState(error: "Resto kosong");
       }
