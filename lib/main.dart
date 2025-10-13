@@ -45,56 +45,44 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
 
   runApp(
-      MultiProvider(
-          providers: [
-          Provider(create: (context) => SharedPreferencesService(prefs)),
-  Provider(create: (context) => ApiService()),
-  Provider(create: (context) => WorkmanagerService()..init()),
+    MultiProvider(
+      providers: [
+        Provider(create: (context) => SharedPreferencesService(prefs)),
+        Provider(create: (context) => ApiService()),
+        Provider(create: (context) => WorkmanagerService()..init()),
 
-  ChangeNotifierProvider(
-  create: (context) => MapViewModel(apiService: context.read<ApiService>()),
-  ),
-  ChangeNotifierProvider(
-  create: (context) => FoodPlaceDetailViewModel(apiService: context.read<ApiService>()),
-  ),
-  ChangeNotifierProvider(
-  create: (context) => UpdateFoodPlaceViewModel(apiService: context.read<ApiService>()),
-  ),
+        ChangeNotifierProvider(
+          create: (context) => SharedPreferencesProvider(
+            context.read<SharedPreferencesService>(),
+          ),
+        ),
 
-  ChangeNotifierProvider(
-  create: (context) => SharedPreferencesProvider(
-  context.read<SharedPreferencesService>(),
-  ),
-  ),
+        ChangeNotifierProvider(
+          create: (context) => HomeProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(create: (context) => SettingStateProvider()),
 
-  ChangeNotifierProvider(
-  create: (context) => HomeProvider(context.read<ApiService>()),
-  ),
-  ChangeNotifierProvider(create: (context) => SettingStateProvider()),
-
-  ChangeNotifierProvider(create: (context) => IndexNavProvider()),
-  ChangeNotifierProvider(create: (context) => CameraProvider()),
-  ChangeNotifierProvider(
-  create: (context) =>
-  ChangeProfileProvider(context.read<ApiService>()),
-  ),
-  ChangeNotifierProvider(
-  create: (context) => FoodListProvider(context.read<ApiService>()),
-  ),
-  ChangeNotifierProvider(
-  create: (context) => SearchFoodProvider(context.read<ApiService>()),
-  ),
-
-  ChangeNotifierProvider(
-  create: (context) => CreateFoodProvider(context.read<ApiService>()),
-  ),
-  ChangeNotifierProvider(
-  create: (context) => DeleteFoodProvider(context.read<ApiService>()),
-  ),
-
-  ],
-  child: MyApp(initialRoute: route),
-  ),
+        ChangeNotifierProvider(create: (context) => IndexNavProvider()),
+        ChangeNotifierProvider(create: (context) => CameraProvider()),
+        ChangeNotifierProvider(
+          create: (context) =>
+              ChangeProfileProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => FoodListProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => SearchFoodProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => CreateFoodProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => DeleteFoodProvider(context.read<ApiService>()),
+        ),
+      ],
+      child: MyApp(initialRoute: route),
+    ),
   );
   }
 
