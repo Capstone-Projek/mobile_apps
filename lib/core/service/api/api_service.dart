@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile_apps/data/models/auth/login/login_response_model.dart';
 import 'package:mobile_apps/data/models/auth/login/user_login_request.dart';
@@ -12,6 +11,7 @@ import 'package:mobile_apps/data/models/main/home/food_list_response_models.dart
 import 'package:mobile_apps/data/models/main/home/resto_list_response_models.dart';
 import 'package:mobile_apps/data/models/main/profile/change_profile_response_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http_parser/http_parser.dart';
 
 import '../../../data/models/main/resto/create_food_place_request.dart';
 import '../../../data/models/main/resto/create_food_place_response.dart';
@@ -19,7 +19,7 @@ import '../../../data/models/main/resto/food_place_search_response.dart';
 import '../../../data/models/main/resto/resto_food_model.dart';
 
 class ApiService {
-  static const String _baseUrl = "https://1cb5b33c045a.ngrok-free.app/api";
+  static const String _baseUrl = "https://8fa7114e6551.ngrok-free.app/api";
 
   Future<RegisterResponseModel> registerUser(UserRegisterRequest user) async {
     final response = await http.post(
@@ -96,11 +96,11 @@ class ApiService {
       },
     );
 
-    debugPrint("response resto list ${response.statusCode}");
+    print("response resto list ${response.statusCode}");
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
-      debugPrint("data resto ${data.length}");
+      print("data resto ${data.length}");
 
       return data.map((e) => RestoListResponseModels.fromJson(e)).toList();
     } else {
@@ -121,13 +121,15 @@ class ApiService {
         },
       );
 
+      print(response.statusCode);
+      print(response.body);
       if (response.statusCode == 200) {
         return FoodListResponseModel.fromJson(jsonDecode(response.body));
       } else {
         throw Exception("Failed to search food list");
       }
     } catch (e) {
-      debugPrint(e.toString());
+      print(e);
       throw Exception("Gagal menampilkan");
     }
   }
@@ -192,9 +194,10 @@ class ApiService {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final Map<String, dynamic> body = jsonDecode(response.body);
-      return FoodModel.fromJson(body);
+      final FoodModel food = FoodModel.fromJson(body);
+      return food;
     } else {
-      throw Exception("Gagal mencari makanan. Code: ${response.statusCode}");
+      throw Exception("Failed to search food");
     }
   }
 
@@ -259,8 +262,8 @@ class ApiService {
   }
 
   Future<CreateFoodPlaceResponse> createFoodPlace(
-    CreateFoodPlaceRequest request,
-  ) async {
+      CreateFoodPlaceRequest request,
+      ) async {
     final prefs = await SharedPreferences.getInstance();
     final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
 
@@ -302,32 +305,25 @@ class ApiService {
     if (request.images != null && request.images!.isNotEmpty) {
       for (var file in request.images!) {
         // Asumsi file adalah gambar dan kita gunakan tipe image/jpeg atau bisa disesuaikan
-        final http.MultipartFile multipartFile =
-            await http.MultipartFile.fromPath(
-              'images', // Nama field di API
-              file.path,
-              // contentType: MediaType('image', 'jpeg'),
-            );
+        final http.MultipartFile multipartFile = await http.MultipartFile.fromPath(
+          'images', // Nama field di API
+          file.path,
+          contentType: MediaType('image', 'jpeg'),
+        );
         requestBody.files.add(multipartFile);
       }
     }
 
     // Kirim request
     final http.StreamedResponse streamedResponse = await requestBody.send();
-    final http.Response response = await http.Response.fromStream(
-      streamedResponse,
-    );
+    final http.Response response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       return CreateFoodPlaceResponse.fromJson(jsonDecode(response.body));
     } else {
       // Lebih baik log atau cek body response untuk detail error dari server
-      debugPrint(
-        "Failed to create food place. Status: ${response.statusCode}, Body: ${response.body}",
-      );
-      throw Exception(
-        "Failed to create food place. Status code: ${response.statusCode}",
-      );
+      print("Failed to create food place. Status: ${response.statusCode}, Body: ${response.body}");
+      throw Exception("Failed to create food place. Status code: ${response.statusCode}");
     }
   }
 
@@ -353,19 +349,15 @@ class ApiService {
       return body['message'] ?? "Food place deleted successfully";
     } else {
       // Log atau cek body response untuk detail error dari server
-      debugPrint(
-        "Failed to delete food place. Status: ${response.statusCode}, Body: ${response.body}",
-      );
-      throw Exception(
-        "Failed to delete food place. Status code: ${response.statusCode}",
-      );
+      print("Failed to delete food place. Status: ${response.statusCode}, Body: ${response.body}");
+      throw Exception("Failed to delete food place. Status code: ${response.statusCode}");
     }
   }
 
   Future<CreateFoodPlaceResponse> updateFoodPlace(
-    int id,
-    CreateFoodPlaceRequest request,
-  ) async {
+      int id,
+      CreateFoodPlaceRequest request,
+      ) async {
     final prefs = await SharedPreferences.getInstance();
     final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
 
@@ -378,7 +370,7 @@ class ApiService {
     // Menggunakan PUT method untuk update
     final requestBody = http.MultipartRequest('PUT', uri)
       ..headers['Authorization'] = 'Bearer $accessToken'
-      // Field wajib
+    // Field wajib
       ..fields['shop_name'] = request.shopName
       ..fields['latitude'] = request.latitude.toString()
       ..fields['longitude'] = request.longitude.toString();
@@ -410,32 +402,25 @@ class ApiService {
     // Berdasarkan fungsi BE Anda, jika ada file baru, file lama akan dihapus/diganti.
     if (request.images != null && request.images!.isNotEmpty) {
       for (var file in request.images!) {
-        final http.MultipartFile multipartFile =
-            await http.MultipartFile.fromPath(
-              'images', // Nama field di API
-              file.path,
-              // contentType: MediaType('image', 'jpeg'),
-            );
+        final http.MultipartFile multipartFile = await http.MultipartFile.fromPath(
+          'images', // Nama field di API
+          file.path,
+          contentType: MediaType('image', 'jpeg'),
+        );
         requestBody.files.add(multipartFile);
       }
     }
 
     // Kirim request
     final http.StreamedResponse streamedResponse = await requestBody.send();
-    final http.Response response = await http.Response.fromStream(
-      streamedResponse,
-    );
+    final http.Response response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       // Response body berisi object food place yang sudah diupdate
       return CreateFoodPlaceResponse.fromJson(jsonDecode(response.body));
     } else {
-      debugPrint(
-        "Failed to update food place. Status: ${response.statusCode}, Body: ${response.body}",
-      );
-      throw Exception(
-        "Failed to update food place. Status code: ${response.statusCode}",
-      );
+      print("Failed to update food place. Status: ${response.statusCode}, Body: ${response.body}");
+      throw Exception("Failed to update food place. Status code: ${response.statusCode}");
     }
   }
 
