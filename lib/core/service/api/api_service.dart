@@ -6,6 +6,7 @@ import 'package:mobile_apps/data/models/auth/login/login_response_model.dart';
 import 'package:mobile_apps/data/models/auth/login/user_login_request.dart';
 import 'package:mobile_apps/data/models/auth/register/register_response_model.dart';
 import 'package:mobile_apps/data/models/auth/register/user_register_request.dart';
+import 'package:mobile_apps/data/models/main/food/edit_food_response.dart';
 import 'package:mobile_apps/data/models/main/food/food_model.dart';
 import 'package:mobile_apps/data/models/main/home/food_list_response_models.dart';
 import 'package:mobile_apps/data/models/main/home/resto_list_response_models.dart';
@@ -19,7 +20,7 @@ import '../../../data/models/main/resto/food_place_search_response.dart';
 import '../../../data/models/main/resto/resto_food_model.dart';
 
 class ApiService {
-  static const String _baseUrl = "https://8fa7114e6551.ngrok-free.app/api";
+  static const String _baseUrl = "https://42371eb7cb9f.ngrok-free.app/api";
 
   Future<RegisterResponseModel> registerUser(UserRegisterRequest user) async {
     final response = await http.post(
@@ -503,6 +504,57 @@ class ApiService {
     } else {
       throw Exception(
         "Gagal menambahkan makanan. [${response.statusCode}] ${response.body}",
+      );
+    }
+  }
+
+  Future<EditFoodResponse> updateFood({
+    required String id,
+    required String foodName,
+    String? category,
+    String? from,
+    String? desc,
+    String? history,
+    String? material,
+    String? recipes,
+    String? timeCook,
+    String? serving,
+    String? vidioUrl,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('MY_ACCESS_TOKEN');
+
+    final uri = Uri.parse("$_baseUrl/food/$id");
+
+    final Map<String, dynamic> body = {
+      "food_name": foodName,
+      if (category != null && category.isNotEmpty) "category": category,
+      if (from != null && from.isNotEmpty) "from": from,
+      if (desc != null && desc.isNotEmpty) "desc": desc,
+      if (history != null && history.isNotEmpty) "history": history,
+      if (material != null && material.isNotEmpty) "material": material,
+      if (recipes != null && recipes.isNotEmpty) "recipes": recipes,
+      if (timeCook != null && timeCook.isNotEmpty) "time_cook": timeCook,
+      if (serving != null && serving.isNotEmpty) "serving": serving,
+      if (vidioUrl != null && vidioUrl.isNotEmpty) "vidio_url": vidioUrl,
+    };
+
+    final response = await http.put(
+      uri,
+      headers: {
+        "Authorization": "Bearer $accessToken",
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+      return EditFoodResponse.fromJson(responseBody);
+    } else {
+      throw Exception(
+        "Gagal mengedit makanan. [${response.statusCode}] ${response.body}",
       );
     }
   }

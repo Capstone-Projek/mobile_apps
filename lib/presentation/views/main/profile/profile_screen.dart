@@ -36,6 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final themeProvider = context.watch<SettingStateProvider>();
     final userProvider = context.watch<SharedPreferencesProvider>();
+    final role = userProvider.showRole ?? "user";
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
@@ -161,23 +162,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 5),
-                  HeaderLayoutWidget(title: "Masukan Data Admin"),
-                  SettingButtonWidget(
-                    title: "Data Makanan",
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        NavigationRoute.adminFoodList.path,
-                      );
-                    },
-                  ),
-                  SettingButtonWidget(title: "Data Toko", onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      NavigationRoute.mapFoodPlaceRoute.path,
-                    );
-                  }),
+                  if (role == "admin") ...[
+                    SizedBox(height: 5),
+                    HeaderLayoutWidget(title: "Masukan Data Admin"),
+                    SettingButtonWidget(
+                      title: "Data Makanan",
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          NavigationRoute.adminFoodList.path,
+                        );
+                      },
+                    ),
+                    SettingButtonWidget(title: "Data Toko", onTap: () {}),
+                  ],
                   SizedBox(height: 56),
                   ButtonNavigateWidget(
                     width: double.infinity,

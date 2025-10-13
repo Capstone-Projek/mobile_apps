@@ -6,6 +6,7 @@ import 'package:mobile_apps/core/utils/setting_state.dart';
 import 'package:mobile_apps/data/models/main/food/food_model.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/create_food_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/delete_food_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/food/edit_food_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/food_list_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/search_food_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/beranda/home_provider.dart';
@@ -45,58 +46,62 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
 
   runApp(
-      MultiProvider(
-          providers: [
-          Provider(create: (context) => SharedPreferencesService(prefs)),
-  Provider(create: (context) => ApiService()),
-  Provider(create: (context) => WorkmanagerService()..init()),
+    MultiProvider(
+      providers: [
+        Provider(create: (context) => SharedPreferencesService(prefs)),
+        Provider(create: (context) => ApiService()),
+        Provider(create: (context) => WorkmanagerService()..init()),
 
-  ChangeNotifierProvider(
-  create: (context) => MapViewModel(apiService: context.read<ApiService>()),
-  ),
-  ChangeNotifierProvider(
-  create: (context) => FoodPlaceDetailViewModel(apiService: context.read<ApiService>()),
-  ),
-  ChangeNotifierProvider(
-  create: (context) => UpdateFoodPlaceViewModel(apiService: context.read<ApiService>()),
-  ),
+        ChangeNotifierProvider(
+          create: (context) =>
+              MapViewModel(apiService: context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) =>
+              FoodPlaceDetailViewModel(apiService: context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) =>
+              UpdateFoodPlaceViewModel(apiService: context.read<ApiService>()),
+        ),
 
-  ChangeNotifierProvider(
-  create: (context) => SharedPreferencesProvider(
-  context.read<SharedPreferencesService>(),
-  ),
-  ),
+        ChangeNotifierProvider(
+          create: (context) => SharedPreferencesProvider(
+            context.read<SharedPreferencesService>(),
+          ),
+        ),
 
-  ChangeNotifierProvider(
-  create: (context) => HomeProvider(context.read<ApiService>()),
-  ),
-  ChangeNotifierProvider(create: (context) => SettingStateProvider()),
+        ChangeNotifierProvider(
+          create: (context) => HomeProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(create: (context) => SettingStateProvider()),
 
-  ChangeNotifierProvider(create: (context) => IndexNavProvider()),
-  ChangeNotifierProvider(create: (context) => CameraProvider()),
-  ChangeNotifierProvider(
-  create: (context) =>
-  ChangeProfileProvider(context.read<ApiService>()),
-  ),
-  ChangeNotifierProvider(
-  create: (context) => FoodListProvider(context.read<ApiService>()),
-  ),
-  ChangeNotifierProvider(
-  create: (context) => SearchFoodProvider(context.read<ApiService>()),
-  ),
-
-  ChangeNotifierProvider(
-  create: (context) => CreateFoodProvider(context.read<ApiService>()),
-  ),
-  ChangeNotifierProvider(
-  create: (context) => DeleteFoodProvider(context.read<ApiService>()),
-  ),
-
-  ],
-  child: MyApp(initialRoute: route),
-  ),
+        ChangeNotifierProvider(create: (context) => IndexNavProvider()),
+        ChangeNotifierProvider(create: (context) => CameraProvider()),
+        ChangeNotifierProvider(
+          create: (context) =>
+              ChangeProfileProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => FoodListProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => SearchFoodProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => CreateFoodProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => EditFoodProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => DeleteFoodProvider(context.read<ApiService>()),
+        ),
+      ],
+      child: MyApp(initialRoute: route),
+    ),
   );
-  }
+}
 
 class MyApp extends StatefulWidget {
   final String initialRoute;
@@ -160,11 +165,9 @@ class _MyAppState extends State<MyApp> {
                 AdminFoodListScreen(),
             NavigationRoute.createAdminFoodList.path: (context) =>
                 CreateFoodListScreen(),
-            NavigationRoute.mapFoodPlaceRoute.path: (context) =>
-                MapScreen(),
+            NavigationRoute.mapFoodPlaceRoute.path: (context) => MapScreen(),
             NavigationRoute.editFoodPlaceRoute.path: (context) =>
                 EditFoodPlaceScreen(), // Ganti dengan class screen Anda
-
           },
           onGenerateRoute: (settings) {
             if (settings.name == NavigationRoute.editAdminFoodList.path) {
