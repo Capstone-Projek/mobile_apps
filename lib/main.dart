@@ -38,6 +38,8 @@ import 'package:mobile_apps/presentation/views/food_place/food_place_screen.dart
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -137,6 +139,7 @@ class _MyAppState extends State<MyApp> {
     return Consumer<SettingStateProvider>(
       builder: (context, themeProvider, child) {
         return MaterialApp(
+          navigatorKey: navigatorKey,
           title: 'Jejak Rasa',
           debugShowCheckedModeBanner: false,
           theme: JejakRasaTheme.lightTheme,
