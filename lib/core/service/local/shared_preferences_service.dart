@@ -12,6 +12,7 @@ class SharedPreferencesService {
   static const String _keyRefreshToken = "MY_REFRESH_TOKEN";
   static const String _keyShowEmail = "MY_SHOW_EMAIL";
   static const String _keyShowUsername = "MY_SHOW_USERNAME";
+  static const String _keyShowRole = "MY_SHOW_ROLE";
 
   Future<void> showMainScreen(bool showMainScreen) async {
     try {
@@ -83,5 +84,17 @@ class SharedPreferencesService {
 
   String getshowUsername() {
     return _preferences.getString(_keyShowUsername) ?? "";
+  }
+
+  Future<void> showRole(String showRole) async {
+    try {
+      await _preferences.setString(_keyShowRole, showRole);
+    } catch (e) {
+      throw Exception("Shared preference cannot save showRole");
+    }
+  }
+
+  String getShowRole() {
+    return _preferences.getString(_keyShowRole) ?? "";
   }
 }
