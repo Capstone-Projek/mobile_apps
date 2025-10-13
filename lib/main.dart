@@ -6,6 +6,7 @@ import 'package:mobile_apps/core/utils/setting_state.dart';
 import 'package:mobile_apps/data/models/main/food/food_model.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/create_food_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/delete_food_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/food/edit_food_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/food_list_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/search_food_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/beranda/home_provider.dart';
@@ -71,6 +72,9 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (context) => CreateFoodProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => EditFoodProvider(context.read<ApiService>()),
         ),
         ChangeNotifierProvider(
           create: (context) => DeleteFoodProvider(context.read<ApiService>()),
