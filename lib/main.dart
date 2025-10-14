@@ -8,6 +8,7 @@ import 'package:mobile_apps/presentation/viewmodels/food/create_food_provider.da
 import 'package:mobile_apps/presentation/viewmodels/food/delete_food_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/edit_food_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/food_list_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/food/food_detail_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/search_food_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/beranda/home_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/camera/camera_provider.dart';
@@ -37,6 +38,8 @@ import 'package:mobile_apps/presentation/views/food_place_detail/food_place_deta
 import 'package:mobile_apps/presentation/views/food_place/food_place_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile_apps/presentation/viewmodels/food_place/food_place_list_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/food_place/food_place_detail_provider.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -99,6 +102,15 @@ void main() async {
         ChangeNotifierProvider(
           create: (context) => DeleteFoodProvider(context.read<ApiService>()),
         ),
+        ChangeNotifierProvider(
+          create: (context) => FoodPlaceListProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => FoodPlaceDetailProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => FoodDetailProvider(context.read<ApiService>()),
+        ),
       ],
       child: MyApp(initialRoute: route),
     ),
@@ -158,7 +170,7 @@ class _MyAppState extends State<MyApp> {
                 ChangePasswordScreen(),
             NavigationRoute.editProfileRoute.path: (context) =>
                 EditProfileScreen(),
-            NavigationRoute.foodDetailRoute.path: (context) =>
+            NavigationRoute.foodDetailRoute.path: (context,) =>
                 FoodDetailScreen(),
             NavigationRoute.foodPlaceDetailRoute.path: (context) =>
                 FoodPlaceDetailScreen(),
