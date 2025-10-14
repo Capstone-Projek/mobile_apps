@@ -35,15 +35,18 @@ class FoodPlaceScreen extends StatefulWidget {
 class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
   final MapController _mapController = MapController();
   final ScrollController _scrollController = ScrollController();
+  
   LatLngBounds? _visibleBounds;
   int? activeIndex;
   int? _lastTappedIndex;
   bool _hasFittedCamera = false;
+  double _mapZoom = 13.0;
   List<Place> places = [];
 
   @override
   void initState() {
     super.initState();
+    
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final sharedProvider = context.read<SharedPreferencesProvider>();
       sharedProvider.getAccessToken();
@@ -53,6 +56,12 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
 
       await context.read<FoodPlaceListProvider>().fetchFoodPlaceList(token);
       if (!mounted) return;
+    });
+
+    _mapController.mapEventStream.listen((event) {
+      setState(() {
+        _mapZoom = event.camera.zoom;
+      });
     });
   }
 
@@ -74,7 +83,11 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
 
   void _onMarkerTap(int index) {
     setState(() {
+      if (activeIndex == index) {
+        return;
+      }
       activeIndex = index;
+      _lastTappedIndex = index;
     });
 
     _animateToLocation(places[index].location);
@@ -95,21 +108,28 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
 
     for (int i = 0; i <= steps; i++) {
       final t = i / steps;
-      // Interpolasi posisi latitude dan longitude
-      final lat = currentCenter.latitude + (target.latitude - currentCenter.latitude) * t;
-      final lng = currentCenter.longitude + (target.longitude - currentCenter.longitude) * t;
+      final lat =
+          currentCenter.latitude +
+          (target.latitude - currentCenter.latitude) * t;
+      final lng =
+          currentCenter.longitude +
+          (target.longitude - currentCenter.longitude) * t;
 
       _mapController.move(LatLng(lat, lng), zoom);
       await Future.delayed(duration ~/ steps);
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(child: Text("Map Screen", style: TextStyle(color: Colors.white, fontSize: 20))),
+        title: const Center(
+          child: Text(
+            "Map Screen",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+        ),
         backgroundColor: const Color(0xFF26599A),
       ),
       body: Consumer<FoodPlaceListProvider>(
@@ -136,8 +156,8 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
             final visiblePlaces = _visibleBounds == null
                 ? places
                 : places
-                    .where((p) => _visibleBounds!.contains(p.location))
-                    .toList();
+                      .where((p) => _visibleBounds!.contains(p.location))
+                      .toList();
 
             return Column(
               children: [
@@ -146,7 +166,7 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                     mapController: _mapController,
                     options: MapOptions(
                       initialCenter: LatLng(-6.9833, 110.4167),
-                      initialZoom: 13,
+                      initialZoom: _mapZoom,
                       onMapEvent: (event) {
                         final bounds = _mapController.camera.visibleBounds;
                         setState(() {
@@ -164,19 +184,58 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                         markers: List.generate(places.length, (index) {
                           final place = places[index];
                           final isActive = activeIndex == index;
+                          final bool showLabel = _mapZoom >= 13;
 
                           return Marker(
                             point: place.location,
-                            width: 40,
-                            height: 40,
+                            width: 120,
+                            height: 80,
                             child: GestureDetector(
                               onTap: () => _onMarkerTap(index),
-                              child: Icon(
-                                Icons.location_on,
-                                color: isActive
-                                    ? const Color(0xFF26599A)
-                                    : Colors.red,
-                                size: isActive ? 40 : 30,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (showLabel)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isActive
+                                          ? const Color(0xFF26599A)
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(6),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.2),
+                                          blurRadius: 3,
+                                          offset: const Offset(1, 1),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      place.name,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.bold,
+                                        color: isActive
+                                            ? Colors.white
+                                            : Colors.black,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Icon(
+                                    Icons.location_on,
+                                    color: isActive
+                                        ? const Color(0xFF26599A)
+                                        : Colors.red,
+                                    size: isActive ? 40 : 30,
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -190,8 +249,9 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                   padding: const EdgeInsets.all(16),
                   decoration: const BoxDecoration(
                     color: Color(0xFFF3F3F3),
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(16)),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
                   ),
                   child: visiblePlaces.isEmpty
                       ? const Center(child: Text("Tidak ada data"))
@@ -200,16 +260,21 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                           itemCount: visiblePlaces.length,
                           itemBuilder: (context, index) {
                             final place = visiblePlaces[index];
-                            final isActive = activeIndex != null &&
+                            final isActive =
+                                activeIndex != null &&
                                 places[activeIndex!].name == place.name;
 
                             return GestureDetector(
                               onTap: () {
                                 final originalIndex = places.indexWhere(
-                                    (p) => p.name == place.name);
+                                  (p) => p.name == place.name,
+                                );
                                 if (_lastTappedIndex == originalIndex) {
                                   Navigator.pushNamed(
-                                      context, '/food-place-detail', arguments: place.id);
+                                    context,
+                                    '/food-place-detail',
+                                    arguments: place.id,
+                                  );
                                 } else {
                                   _onMarkerTap(originalIndex);
                                   _lastTappedIndex = originalIndex;
@@ -242,25 +307,26 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                                         height: 100,
                                         fit: BoxFit.cover,
                                         errorBuilder:
-                                          (context, error, stackTrace) {
-                                          return Container(
-                                            width: 100,
-                                            height: 100,
-                                            color: Colors.grey[300],
-                                            child: const Icon(
-                                              Icons.image_not_supported,
-                                              size: 40,
-                                              color: Colors.grey,
-                                            ),
-                                          );
-                                        },
+                                            (context, error, stackTrace) {
+                                              return Container(
+                                                width: 100,
+                                                height: 100,
+                                                color: Colors.grey[300],
+                                                child: const Icon(
+                                                  Icons.image_not_supported,
+                                                  size: 40,
+                                                  color: Colors.grey,
+                                                ),
+                                              );
+                                            },
                                       ),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Padding(
                                         padding: const EdgeInsets.symmetric(
-                                            vertical: 12),
+                                          vertical: 12,
+                                        ),
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
@@ -278,11 +344,13 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                                             const SizedBox(height: 4),
                                             Row(
                                               children: [
-                                                Icon(Icons.location_on,
-                                                    color: isActive
-                                                        ? Colors.white
-                                                        : Colors.grey,
-                                                    size: 16),
+                                                Icon(
+                                                  Icons.location_on,
+                                                  color: isActive
+                                                      ? Colors.white
+                                                      : Colors.grey,
+                                                  size: 16,
+                                                ),
                                                 const SizedBox(width: 4),
                                                 Expanded(
                                                   child: Text(
@@ -302,11 +370,13 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                                             const SizedBox(height: 4),
                                             Row(
                                               children: [
-                                                Icon(Icons.local_offer,
-                                                    color: isActive
-                                                        ? Colors.white
-                                                        : Colors.grey,
-                                                    size: 16),
+                                                Icon(
+                                                  Icons.local_offer,
+                                                  color: isActive
+                                                      ? Colors.white
+                                                      : Colors.grey,
+                                                  size: 16,
+                                                ),
                                                 const SizedBox(width: 4),
                                                 Text(
                                                   "IDR ${place.price}",

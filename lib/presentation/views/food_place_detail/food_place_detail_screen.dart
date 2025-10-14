@@ -1,8 +1,12 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:mobile_apps/presentation/viewmodels/food/food_detail_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/auth/user/shared_preferences_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food_place/food_place_detail_provider.dart';
 import 'package:mobile_apps/presentation/static/food_place/food_place_detail_result_state.dart';
+import 'package:mobile_apps/presentation/static/food/food_detail_result_state.dart';
+import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 
 class FoodPlaceDetailScreen extends StatefulWidget {
   const FoodPlaceDetailScreen({super.key});
@@ -12,59 +16,54 @@ class FoodPlaceDetailScreen extends StatefulWidget {
 }
 
 class _FoodPlaceDetailScreenState extends State<FoodPlaceDetailScreen> {
-  final List<Map<String, String>> menuItems = [
-    {
-      "image": "images/makanan.jpg",
-      "title": "Soto Bangka Beli",
-      "desc": "Soto Bangka Beli adalah Soto khas daerah ini kar",
-    },
-    {
-      "image": "images/makanan.jpg",
-      "title": "Nasi Goreng Pak Kumis",
-      "desc": "Nasi goreng terenak di kota dengan bumbu khas tradisional.",
-    },
-    {
-      "image": "images/makanan.jpg",
-      "title": "Ayam Penyet Bu Rini",
-      "desc": "Ayam penyet pedas mantap dengan sambal terasi khas rumah makan ini.",
-    },
-  ];
-
   @override
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final id = ModalRoute.of(context)!.settings.arguments as int;
-
-      final sharedProvider = context.read<SharedPreferencesProvider>();
-      sharedProvider.getAccessToken();
-      
-      final token = sharedProvider.accessToken;
-
-      if (!mounted || token == null) return;
-
-      await context.read<FoodPlaceDetailProvider>().fetchFoodPlaceById(
-        token,
-        id,
-      );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
     });
+  }
+
+  Future<void> _loadData() async {
+    final id = ModalRoute.of(context)!.settings.arguments as int;
+    final sharedProvider = context.read<SharedPreferencesProvider>();
+    final foodPlaceDetailProvider = context.read<FoodPlaceDetailProvider>();
+    final foodDetailProvider = context.read<FoodDetailProvider>();
+
+    sharedProvider.getAccessToken();
+    final token = sharedProvider.accessToken;
+
+    if (!mounted || token == null) return;
+
+    await foodPlaceDetailProvider.fetchFoodPlaceById(id);
+  
+    if (!mounted) return;
+
+    final foodPlaceState = foodPlaceDetailProvider.resultState;
+
+    if (foodPlaceState is FoodPlaceDetailLoadedState) {
+      final foodId = foodPlaceState.data.foodId;
+      await foodDetailProvider.fetchFoodById(foodId);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<FoodPlaceDetailProvider>().resultState;
+    final foodPlaceState = context.watch<FoodPlaceDetailProvider>().resultState;
+    final foodState = context.watch<FoodDetailProvider>().resultState;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: Builder(
         builder: (context) {
-          if (state is FoodPlaceDetailLoadingState) {
+          if (foodPlaceState is FoodPlaceDetailLoadingState) {
             return const Center(child: CircularProgressIndicator());
-          } else if (state is FoodPlaceDetailErrorState) {
-            return Center(child: Text(state.error));
-          } else if (state is FoodPlaceDetailLoadedState) {
-            final place = state.data;
+          } else if (foodPlaceState is FoodPlaceDetailErrorState) {
+            return Center(child: Text(foodPlaceState.error));
+          } else if (foodPlaceState is FoodPlaceDetailLoadedState) {
+            final place = foodPlaceState.data;
+
             return SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +71,7 @@ class _FoodPlaceDetailScreenState extends State<FoodPlaceDetailScreen> {
                   Stack(
                     children: [
                       Image.network(
-                        place.images.imageUrl,
+                        place.images?.imageUrl ?? '',
                         width: double.infinity,
                         height: 220,
                         fit: BoxFit.cover,
@@ -131,7 +130,10 @@ class _FoodPlaceDetailScreenState extends State<FoodPlaceDetailScreen> {
                             Expanded(
                               child: Text(
                                 place.address,
-                                style: TextStyle(color: Colors.white, fontSize: 12),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
                               ),
                             ),
                           ],
@@ -141,7 +143,7 @@ class _FoodPlaceDetailScreenState extends State<FoodPlaceDetailScreen> {
                   ),
 
                   const SizedBox(height: 16),
-                  
+
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
@@ -151,7 +153,14 @@ class _FoodPlaceDetailScreenState extends State<FoodPlaceDetailScreen> {
                           children: [
                             Icon(Icons.food_bank_rounded),
                             SizedBox(width: 8),
-                            Text(place.foodName),
+                            Expanded(
+                              child: Text(
+                                place.foodName,
+                                softWrap: true,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                              ),
+                            ),
                           ],
                         ),
                         SizedBox(height: 8),
@@ -159,9 +168,7 @@ class _FoodPlaceDetailScreenState extends State<FoodPlaceDetailScreen> {
                           children: [
                             Icon(Icons.local_offer),
                             SizedBox(width: 8),
-                            Expanded(
-                              child: Text("IDR ${place.priceRange}"),
-                            ),
+                            Expanded(child: Text("IDR ${place.priceRange}")),
                           ],
                         ),
                         SizedBox(height: 8),
@@ -177,7 +184,9 @@ class _FoodPlaceDetailScreenState extends State<FoodPlaceDetailScreen> {
                           children: [
                             Icon(Icons.access_time_rounded),
                             SizedBox(width: 8),
-                            Text("${place.openHours} - ${place.closeHours} WIB"),
+                            Text(
+                              "${place.openHours} - ${place.closeHours} WIB",
+                            ),
                           ],
                         ),
                       ],
@@ -200,62 +209,131 @@ class _FoodPlaceDetailScreenState extends State<FoodPlaceDetailScreen> {
 
                   SizedBox(
                     height: 220,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: menuItems.length,
-                      itemBuilder: (context, index) {
-                        final item = menuItems[index];
-                        return Container(
-                          width: 160,
-                          margin: const EdgeInsets.only(right: 12),
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: const BorderSide(color: Colors.grey),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(12),
-                                  ),
-                                  child: Image.asset(
-                                    item["image"]!,
-                                    width: double.infinity,
-                                    height: 120,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    item["title"]!,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                    child: Builder(
+                      builder: (context) {
+                        if (foodState is FoodDetailLoadingState) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        } else if (foodState is FoodDetailErrorState) {
+                          return Center(child: Text(foodState.error));
+                        } else if (foodState is FoodDetailLoadedState) {
+                          final foodDetail = foodState.data;
+
+                          final safeFoodDetail = [
+                            foodDetail
+                          ];
+
+                          log("Safe food list length: ${safeFoodDetail.length}");
+
+                          return ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: safeFoodDetail.length,
+                            itemBuilder: (context, index) {
+                              final item = safeFoodDetail[index];
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                child: Material(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSecondary,
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: InkWell(
+                                    onTap: () {
+                                      Navigator.pushNamed(context, '/food-detail');
+                                    },
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(13),
+                                      height: 201,
+                                      width: 180,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: JejakRasaColor.tersier.color,
+                                          strokeAlign: 1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            flex: 3,
+                                            child: item.images.isNotEmpty
+                                                ? ClipRRect(
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    child: Image.network(
+                                                      item.images.first.imageUrl,
+                                                      width: double.infinity,
+                                                      fit: BoxFit.fill,
+                                                      errorBuilder: (context, error, stackTrace) {
+                                                        return Container(
+                                                          color: Colors.grey[200],
+                                                          child: const Center(
+                                                            child: Icon(Icons.broken_image, color: Colors.grey, size: 40),
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
+                                                  )
+                                                : Container(
+                                                    color: Colors.grey[200],
+                                                    child: const Center(
+                                                      child: Icon(
+                                                        Icons.image,
+                                                        color: Colors.grey,
+                                                        size: 40,
+                                                      ),
+                                                    ),
+                                                  ),
+                                          ),
+
+                                          const SizedBox(height: 12),
+
+                                          Text(
+                                            item.foodName,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary,
+                                                ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 5),
+                                          Expanded(
+                                            flex: 2,
+                                            child: Text(
+                                              item.desc,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .displaySmall
+                                                  ?.copyWith(
+                                                    color: Theme.of(
+                                                      context,
+                                                    ).colorScheme.primary,
+                                                  ),
+                                              textAlign: TextAlign.justify,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 3,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                  ),
-                                  child: Text(
-                                    item["desc"]!,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.black54,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
+                              );
+                            },
+                          );
+                        } else {
+                          return const SizedBox.shrink();
+                        }
                       },
                     ),
                   ),

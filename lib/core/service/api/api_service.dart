@@ -271,7 +271,7 @@ class ApiService {
     final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
 
     final response = await http.get(
-      Uri.parse("$_baseUrl/food-place/$id"),
+      Uri.parse("$_baseUrl/get-food-place/$id"),
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $accessToken",
