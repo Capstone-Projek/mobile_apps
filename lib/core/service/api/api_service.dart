@@ -12,6 +12,7 @@ import 'package:mobile_apps/data/models/main/home/food_list_response_models.dart
 import 'package:mobile_apps/data/models/main/home/resto_list_response_models.dart';
 import 'package:mobile_apps/data/models/main/profile/change_profile_response_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile_apps/data/models/food_place/food_place_list_response_model.dart';
 
 import '../../../data/models/main/resto/create_food_place_request.dart';
 import '../../../data/models/main/resto/create_food_place_response.dart';
@@ -19,7 +20,7 @@ import '../../../data/models/main/resto/food_place_search_response.dart';
 import '../../../data/models/main/resto/resto_food_model.dart';
 
 class ApiService {
-  static const String _baseUrl = "https://1cb5b33c045a.ngrok-free.app/api";
+  static const String _baseUrl = "http://localhost:4000/api";
 
   Future<RegisterResponseModel> registerUser(UserRegisterRequest user) async {
     final response = await http.post(
@@ -243,7 +244,7 @@ class ApiService {
     final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
 
     final response = await http.get(
-      Uri.parse("$_baseUrl/get-food-place/$id"),
+      Uri.parse("$_baseUrl/food-place/$id"),
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $accessToken",
@@ -551,4 +552,45 @@ class ApiService {
       }
     }
   }
+
+  Future<List<FoodPlaceListResponseModel>> getAllFoodPlace(
+    final String accessToken,
+  ) async {
+    final response = await http.get(
+      Uri.parse("$_baseUrl/food-place"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => FoodPlaceListResponseModel.fromJson(e)).toList();
+    } else {
+      throw Exception("Failed to load food places");
+    }
+  }
+
+  Future<FoodModel> getFoodById(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
+
+    final response = await http.get(
+      Uri.parse("$_baseUrl/food/$id"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      return FoodModel.fromJson(data);
+    } else {
+      throw Exception("Failed to get food place with id: $id");
+    }
+  }
+
+
 }
