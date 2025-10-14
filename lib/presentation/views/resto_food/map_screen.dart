@@ -1,0 +1,436 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:provider/provider.dart';
+
+// Ganti dengan path ke ViewModel dan Model Anda yang sebenarnya
+import '../../../data/models/main/resto/resto_food_model.dart';
+import '../../static/main/navigation_route.dart';
+import '../../viewmodels/resto/food_place_detail_view_model.dart';
+import '../../viewmodels/resto/resto_food_viewmodel.dart';
+
+class MapScreen extends StatefulWidget {
+  const MapScreen({super.key});
+
+  @override
+  State<MapScreen> createState() => _MapScreenState();
+}
+
+class _MapScreenState extends State<MapScreen> {
+  // Koordinat default (misalnya, pusat kota)
+  static const LatLng _initialCenter = LatLng(-7.967, 112.632);
+
+  @override
+  void initState() {
+    super.initState();
+    // Panggil fetchFoodPlaces saat screen pertama kali dibuka
+    Future.microtask(() =>
+        Provider.of<MapViewModel>(context, listen: false).fetchFoodPlaces()
+    );
+  }
+
+  // Helper untuk membuat baris detail dengan ikon berwarna Primary MD3
+
+
+  // Helper untuk membuat card info kecil (Jam/Harga) dengan MD3 Card
+  // Helper untuk membuat baris detail dengan ikon berwarna Primary MD3
+  Widget _buildDetailRow({required IconData icon, required String label, required String value}) {
+    // Menggunakan warna onSurfaceVariant untuk label sekunder
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0), // Padding vertikal lebih besar
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: colorScheme.primary),
+          const SizedBox(width: 16), // Spasi lebih lebar
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Label menggunakan gaya bodySmall atau labelLarge
+                Text(
+                  label,
+                  style: textTheme.labelLarge?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                // Nilai menggunakan gaya bodyLarge untuk keterbacaan
+                Text(
+                  value.isEmpty ? "Tidak tersedia" : value,
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper untuk membuat card info kecil (Jam/Harga) dengan MD3 Card
+  Widget _buildInfoCard({required IconData icon, required String title, required String subtitle}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Card(
+      // Menggunakan warna container (SurfaceContainerLow/Medium) untuk background card
+      color: colorScheme.surfaceContainerHigh,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), // Sudut lebih membulat
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Ikon menggunakan warna secondary atau primary
+            Icon(icon, size: 28, color: colorScheme.secondary),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: textTheme.labelMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle.isEmpty ? "-" : subtitle,
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // FUNGSI UNTUK MEMBANGUN KONTEN DETAIL (Menerima ScrollController)
+  Widget _buildDetailContent(RestoPlaceModel place, ScrollController scrollController) {
+    final List<String> imageUrls = place.images != null
+        ? [place.images!.imageUrl]
+        : [];
+
+    final screenHeight = MediaQuery.of(context).size.height;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    // Menggunakan Column untuk struktur vertikal
+    return Column(
+      children: [
+        // Drag Handle (Sudah rapi)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10.0),
+          child: Container(
+            width: 40,
+            height: 5,
+            decoration: BoxDecoration(
+              color: colorScheme.onSurfaceVariant.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+
+        // Konten utama yang dapat di-scroll
+        Expanded(
+          child: SingleChildScrollView(
+            controller: scrollController,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 1. Image Slider (PageView)
+                if (imageUrls.isNotEmpty)
+                  Container(
+                    height: screenHeight * 0.35,
+                    width: double.infinity,
+                    child: PageView.builder(
+                      itemCount: imageUrls.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16.0),
+                            child: Image.network(
+                              imageUrls[index],
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(child: CircularProgressIndicator(
+                                  color: colorScheme.primary,
+                                ));
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Center(child: Icon(Icons.broken_image, size: 50, color: colorScheme.onSurfaceVariant));
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                else
+                  Container(
+                    height: screenHeight * 0.35, // Tinggi disamakan dengan Image Slider
+                    color: colorScheme.surfaceContainerLow,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.image_not_supported, size: 50, color: colorScheme.onSurfaceVariant),
+                          Text("Gambar tidak tersedia", style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                // 2. Detail Konten
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 16.0), // Padding yang lebih konsisten
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Judul Toko
+                      Text(
+                        place.shopName,
+                        // Menggunakan headlineLarge untuk judul utama
+                        style: textTheme.headlineLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Food Name (Sebagai sub-judul atau kategori)
+                      Text(
+                        "Menu Utama: ${place.foodName}",
+                        style: textTheme.titleMedium?.copyWith(
+                          color: colorScheme.secondary,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Grid Jam Buka & Harga
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildInfoCard(
+                              icon: Icons.schedule,
+                              title: "Jam Operasi",
+                              subtitle: "${place.openHours} - ${place.closeHours}",
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildInfoCard(
+                              icon: Icons.price_change,
+                              title: "Rentang Harga",
+                              subtitle: "Rp ${place.priceRange}",
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      // --- Divider Estetik ---
+                      Divider(height: 1, color: colorScheme.outlineVariant),
+                      const SizedBox(height: 24),
+
+                      // Sub-judul Detail Lokasi
+                      Text(
+                        "Informasi Kontak & Lokasi",
+                        style: textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Alamat & Kontak (Menggunakan _buildDetailRow yang sudah disempurnakan)
+                      _buildDetailRow(
+                        icon: Icons.location_on,
+                        label: "Alamat",
+                        value: place.address,
+                      ),
+                      _buildDetailRow(
+                        icon: Icons.phone,
+                        label: "Nomor Telepon",
+                        value: place.phone,
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      // Tombol Aksi (FilledButton MD3)
+                      Center(
+                        child: FilledButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context); // Tutup bottom sheet
+
+                            // >>> NAVIGASI KE HALAMAN EDIT DENGAN MENGIRIM DATA LENGKAP <<<
+                            Navigator.pushNamed(
+                              context,
+                              NavigationRoute.editFoodPlaceRoute.path,
+                              // Mengirim objek RestoPlaceModel lengkap sebagai argumen
+                              arguments: place,
+                            );
+                          },
+                          // Ganti Label dan Icon
+                          icon: const Icon(Icons.edit),
+                          label: const Text('Edit Resto'),
+                          style: FilledButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                            textStyle: textTheme.titleMedium,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 40), // Padding bawah yang cukup
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Fungsi untuk menampilkan detail di bottom sheet
+  void _showDetailSheet(BuildContext context, RestoPlaceModel foodPlace) {
+    final detailViewModel = Provider.of<FoodPlaceDetailViewModel>(context, listen: false);
+    detailViewModel.clearData();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) {
+        detailViewModel.fetchFoodPlaceById(foodPlace.id);
+
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.25,
+          maxChildSize: 1.0, // Sheet bisa full screen
+          expand: false,
+          builder: (context, scrollController) {
+            return ChangeNotifierProvider.value(
+              value: detailViewModel,
+              child: Consumer<FoodPlaceDetailViewModel>(
+                builder: (context, vm, child) {
+                  if (vm.isLoading) {
+                    return SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.6,
+                      child: Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary)),
+                    );
+                  }
+
+                  if (vm.errorMessage != null || vm.foodPlace == null) {
+                    return SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.6,
+                      child: Center(
+                        child: Text(
+                          vm.errorMessage ?? "Detail tidak ditemukan",
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  // Kirimkan scrollController ke _buildDetailContent
+                  return _buildDetailContent(vm.foodPlace!, scrollController);
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Peta Tempat Makan"),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+        elevation: 0,
+      ),
+      body: Consumer<MapViewModel>(
+        builder: (context, mapVM, child) {
+          if (mapVM.isLoading) {
+            return Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary));
+          }
+
+          if (mapVM.errorMessage != null) {
+            return Center(child: Text("Gagal memuat data: ${mapVM.errorMessage}"));
+          }
+
+          final markers = mapVM.foodPlaces.map((place) {
+            final LatLng point = LatLng(place.latitude, place.longitude);
+
+            return Marker(
+              point: point,
+              width: 100,
+              height: 100,
+              child: GestureDetector(
+                onTap: () => _showDetailSheet(context, place),
+                child: Column(
+                  children: [
+                    // Label Marker MD3 Style
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainerHigh.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 0.5),
+                      ),
+                      child: Text(
+                        place.shopName,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    // Ikon Marker
+                    Icon(Icons.location_on, color: Theme.of(context).colorScheme.error, size: 30),
+                  ],
+                ),
+              ),
+            );
+          }).toList();
+
+          return FlutterMap(
+            options: const MapOptions(
+              initialCenter: _initialCenter,
+              initialZoom: 13.0,
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+                subdomains: const ['a', 'b', 'c'],
+                userAgentPackageName: 'com.example.mobile_apps',
+              ),
+              MarkerLayer(markers: markers),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}

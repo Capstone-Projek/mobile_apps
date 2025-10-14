@@ -371,6 +371,8 @@ class __BodyLoginScreenState extends State<_BodyLoginScreen> {
                                   await sharedPreferencesProvider
                                       .setShowUsername(data.dataUser.name);
                                   await sharedPreferencesProvider
+                                      .setShowRole(data.dataUser.role);
+                                  await sharedPreferencesProvider
                                       .setAccessToken(data.accessToken);
                                   await sharedPreferencesProvider
                                       .setRefreshToken(data.refreshToken);
@@ -419,7 +421,6 @@ class __BodyLoginScreenState extends State<_BodyLoginScreen> {
               return const SizedBox.shrink();
             },
           ),
-          
         ],
       ),
     );

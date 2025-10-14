@@ -5,10 +5,7 @@ import '../../../data/models/main/resto/resto_food_model.dart';
 
 
 class FoodPlaceDetailViewModel extends ChangeNotifier {
-  final ApiService _apiService;
-  FoodPlaceDetailViewModel({required ApiService apiService})
-      : _apiService = apiService;
-
+  final ApiService _apiService = ApiService();
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
