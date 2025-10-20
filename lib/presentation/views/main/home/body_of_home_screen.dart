@@ -30,12 +30,15 @@ class BodyOfHomeScreen extends StatefulWidget {
 
 class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
   Widget buildImage(RestoListResponseModels item) {
+    final hasImage = item.images != null && item.images!.isNotEmpty;
+    final imageUrl = hasImage ? item.images!.first.imageUrl : null;
+
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (item.images != null && item.images.imageUrl != "")
+        if (imageUrl != null && imageUrl.isNotEmpty)
           Image.network(
-            item.images.imageUrl!,
+            imageUrl,
             fit: BoxFit.cover,
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;
@@ -66,7 +69,7 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.food.foodName,
+                    item.food!.foodName ?? "-",
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: JejakRasaColor.primary.color,
                     ),
@@ -85,7 +88,7 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
-                          item.address,
+                          item.address ?? "-",
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(color: JejakRasaColor.primary.color),
                           maxLines: 1,
