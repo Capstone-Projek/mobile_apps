@@ -19,7 +19,7 @@ import '../../../data/models/main/resto/food_place_search_response.dart';
 import '../../../data/models/main/resto/resto_food_model.dart';
 
 class ApiService {
-  static const String _baseUrl = "https://8fa7114e6551.ngrok-free.app/api";
+  static const String _baseUrl = "https://b35b33aa6402.ngrok-free.app/api";
 
   Future<RegisterResponseModel> registerUser(UserRegisterRequest user) async {
     final response = await http.post(
@@ -354,7 +354,7 @@ class ApiService {
     }
   }
 
-  Future<CreateFoodPlaceResponse> updateFoodPlace(
+  Future<RestoPlaceModel> updateFoodPlace(
       int id,
       CreateFoodPlaceRequest request,
       ) async {
@@ -365,64 +365,84 @@ class ApiService {
       throw Exception("Access Token not found. Please login.");
     }
 
-    final uri = Uri.parse("$_baseUrl/food-place/$id");
+    final uri = Uri.parse("$_baseUrl/edit-food-place/$id");
 
-    // Menggunakan PUT method untuk update
     final requestBody = http.MultipartRequest('PUT', uri)
       ..headers['Authorization'] = 'Bearer $accessToken'
-    // Field wajib
       ..fields['shop_name'] = request.shopName
       ..fields['latitude'] = request.latitude.toString()
       ..fields['longitude'] = request.longitude.toString();
 
-    // Tambahkan field opsional jika tidak null
-    if (request.foodId != null) {
-      requestBody.fields['food_id'] = request.foodId.toString();
-    }
-    if (request.address != null) {
-      requestBody.fields['address'] = request.address!;
-    }
-    if (request.phone != null) {
-      requestBody.fields['phone'] = request.phone!;
-    }
-    if (request.openHours != null) {
-      requestBody.fields['open_hours'] = request.openHours!;
-    }
-    if (request.closeHours != null) {
-      requestBody.fields['close_hours'] = request.closeHours!;
-    }
-    if (request.priceRange != null) {
-      requestBody.fields['price_range'] = request.priceRange!;
-    }
-    if (request.foodName != null) {
-      requestBody.fields['food_name'] = request.foodName!;
-    }
+    // optional fields
+    if (request.foodId != null) requestBody.fields['food_id'] = request.foodId.toString();
+    if (request.address != null) requestBody.fields['address'] = request.address!;
+    if (request.phone != null) requestBody.fields['phone'] = request.phone!;
+    if (request.openHours != null) requestBody.fields['open_hours'] = request.openHours!;
+    if (request.closeHours != null) requestBody.fields['close_hours'] = request.closeHours!;
+    if (request.priceRange != null) requestBody.fields['price_range'] = request.priceRange!;
+    if (request.foodName != null) requestBody.fields['food_name'] = request.foodName!;
 
-    // Tambahkan file gambar baru (jika ada)
-    // Berdasarkan fungsi BE Anda, jika ada file baru, file lama akan dihapus/diganti.
-    if (request.images != null && request.images!.isNotEmpty) {
-      for (var file in request.images!) {
-        final http.MultipartFile multipartFile = await http.MultipartFile.fromPath(
-          'images', // Nama field di API
-          file.path,
-          contentType: MediaType('image', 'jpeg'),
-        );
-        requestBody.files.add(multipartFile);
-      }
-    }
-
-    // Kirim request
     final http.StreamedResponse streamedResponse = await requestBody.send();
     final http.Response response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      // Response body berisi object food place yang sudah diupdate
-      return CreateFoodPlaceResponse.fromJson(jsonDecode(response.body));
+      final jsonData = jsonDecode(response.body);
+      // karena response {"message": "...", "data": {...}}
+      return RestoPlaceModel.fromJson(jsonData['data']);
     } else {
-      print("Failed to update food place. Status: ${response.statusCode}, Body: ${response.body}");
-      throw Exception("Failed to update food place. Status code: ${response.statusCode}");
+      final errorBody = jsonDecode(response.body);
+      throw Exception("Gagal update food place: ${errorBody['detail'] ?? 'Unknown error'}");
     }
   }
+
+  Future<List<String>> updateFoodPlaceImages(
+      int idFoodPlace,
+      List<File> newImages,
+      ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
+
+    if (accessToken == null) {
+      throw Exception("Access Token not found. Please login.");
+    }
+
+    final uri = Uri.parse("$_baseUrl/food-place/image");
+    final request = http.MultipartRequest('PUT', uri)
+      ..headers['Authorization'] = 'Bearer $accessToken'
+      ..fields['id_food_place'] = idFoodPlace.toString();
+
+    for (var image in newImages) {
+      final ext = image.path.split('.').last.toLowerCase();
+      final multipartFile = await http.MultipartFile.fromPath(
+        'images',
+        image.path,
+        contentType: MediaType('image', ext == 'png' ? 'png' : 'jpeg'),
+      );
+      request.files.add(multipartFile);
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      if (jsonData['urls'] != null) {
+        return List<String>.from(jsonData['urls']);
+      } else if (jsonData['data'] != null) {
+        // handle case: API returns { data: [ { image_url: "..." }, ... ] }
+        return (jsonData['data'] as List)
+            .map((e) => e['image_url'] as String)
+            .toList();
+      } else {
+        return [];
+      }
+    } else {
+      final errorBody = jsonDecode(response.body);
+      throw Exception(
+          "Gagal update gambar: ${errorBody['detail'] ?? 'Unknown error'}");
+    }
+  }
+
 
   Future<FoodModel> createFood({
     required String foodName,

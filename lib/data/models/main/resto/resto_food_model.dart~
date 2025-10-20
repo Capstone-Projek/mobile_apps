@@ -59,27 +59,6 @@ class RestoPlaceModel {
           [],
     );
   }
-
-  RestoPlaceModel copyWith({
-    List<ImageInfo>? images,
-  }) {
-    return RestoPlaceModel(
-      id: id,
-      foodId: foodId,
-      shopName: shopName,
-      address: address,
-      phone: phone,
-      openHours: openHours,
-      closeHours: closeHours,
-      priceRange: priceRange,
-      latitude: latitude,
-      longitude: longitude,
-      createdAt: createdAt,
-      foodName: foodName,
-      food: food,
-      images: images ?? this.images,
-    );
-  }
 }
 
 

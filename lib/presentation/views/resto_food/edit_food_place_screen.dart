@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
-import 'package:image_picker/image_picker.dart'; // Import Image Picker
+import 'package:image_picker/image_picker.dart';
 
-// Ganti dengan path yang benar
 import '../../../data/models/main/resto/resto_food_model.dart';
 import '../../viewmodels/resto/update_food_place_viewmodel.dart';
 import '../../../data/models/main/resto/create_food_place_request.dart';
@@ -17,9 +16,8 @@ class EditFoodPlaceScreen extends StatefulWidget {
 
 class _EditFoodPlaceScreenState extends State<EditFoodPlaceScreen> {
   final _formKey = GlobalKey<FormState>();
-  final ImagePicker _picker = ImagePicker(); // Inisialisasi Image Picker
+  final ImagePicker _picker = ImagePicker();
 
-  // Controllers
   late TextEditingController _shopNameController;
   late TextEditingController _addressController;
   late TextEditingController _phoneController;
@@ -29,10 +27,6 @@ class _EditFoodPlaceScreenState extends State<EditFoodPlaceScreen> {
   late TextEditingController _foodNameController;
   late TextEditingController _foodIdController;
 
-  // State untuk gambar baru
-  List<File> _newImages = [];
-
-  // Data awal dari arguments
   late RestoPlaceModel _initialData;
   bool _isDataInitialized = false;
 
@@ -53,8 +47,12 @@ class _EditFoodPlaceScreenState extends State<EditFoodPlaceScreen> {
       }
 
       _initialData = args;
+      final viewModel = context.read<UpdateFoodPlaceViewModel>();
 
-      // Inisialisasi Controllers
+      viewModel.setInitialImages(
+        _initialData.images.map((img) => img.imageUrl).toList(),
+      );
+
       _shopNameController = TextEditingController(text: _initialData.shopName);
       _addressController = TextEditingController(text: _initialData.address);
       _phoneController = TextEditingController(text: _initialData.phone);
@@ -68,43 +66,33 @@ class _EditFoodPlaceScreenState extends State<EditFoodPlaceScreen> {
     }
   }
 
-  @override
-  void dispose() {
-    if (_isDataInitialized) {
-      _shopNameController.dispose();
-      _addressController.dispose();
-      _phoneController.dispose();
-      _openHoursController.dispose();
-      _closeHoursController.dispose();
-      _priceRangeController.dispose();
-      _foodNameController.dispose();
-      _foodIdController.dispose();
-    }
-    super.dispose();
-  }
-
-  // --- IMAGE PICKER FUNCTION ---
-  Future<void> _pickImages() async {
-    final List<XFile>? selectedImages = await _picker.pickMultiImage(
-      imageQuality: 75, // Kualitas gambar
-    );
-
+  Future<void> _pickImages(UpdateFoodPlaceViewModel viewModel) async {
+    final List<XFile>? selectedImages =
+    await _picker.pickMultiImage(imageQuality: 75);
     if (selectedImages != null && selectedImages.isNotEmpty) {
-      setState(() {
-        // Konversi XFile ke File dan simpan ke state
-        _newImages = selectedImages.map((xFile) => File(xFile.path)).toList();
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("${_newImages.length} gambar terpilih.")),
-      );
+      viewModel.addNewImages(selectedImages.map((x) => File(x.path)).toList());
     }
   }
 
-  // --- SUBMIT FUNCTION ---
-  void _submitUpdate(UpdateFoodPlaceViewModel viewModel) async {
-    if (!_formKey.currentState!.validate()) {
+  Future<void> _updateImages(UpdateFoodPlaceViewModel viewModel) async {
+    if (viewModel.newImages.isEmpty &&
+        viewModel.existingImages.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Tidak ada gambar untuk diupdate.")),
+      );
       return;
     }
+
+    await viewModel.updateFoodPlaceImages(_initialData.id);
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Gambar berhasil diperbarui.")),
+    );
+  }
+
+  void _submitUpdate(UpdateFoodPlaceViewModel viewModel) async {
+    if (!_formKey.currentState!.validate()) return;
 
     final requestData = CreateFoodPlaceRequest(
       foodId: int.tryParse(_foodIdController.text),
@@ -117,180 +105,74 @@ class _EditFoodPlaceScreenState extends State<EditFoodPlaceScreen> {
       latitude: _initialData.latitude,
       longitude: _initialData.longitude,
       foodName: _foodNameController.text,
-      images: _newImages.isNotEmpty ? _newImages : null,
+      images: viewModel.newImages,
     );
 
     await viewModel.updateFoodPlace(_initialData.id, requestData);
 
-    if (viewModel.updatedFoodPlace != null) {
+    if (viewModel.updatedFoodPlace != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("${viewModel.updatedFoodPlace!.shopName} berhasil diupdate!")),
+        SnackBar(
+            content:
+            Text("${viewModel.updatedFoodPlace!.shopName} berhasil diupdate!")),
       );
       Navigator.pop(context);
     }
   }
 
-  // Helper untuk MD3 InputDecoration
-  InputDecoration _md3InputDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      border: const OutlineInputBorder(),
-      filled: true,
-      fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
-      contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
-    );
-  }
-
-  // Helper untuk spacing
-  Widget _buildFormSpacer() => const SizedBox(height: 16);
-
   @override
   Widget build(BuildContext context) {
-    if (!_isDataInitialized) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
     final viewModel = context.watch<UpdateFoodPlaceViewModel>();
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    if (!_isDataInitialized) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Edit Resto: ${_initialData.shopName}"),
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
-        elevation: 1, // Sedikit shadow untuk AppBar MD3
       ),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0), // Padding lebih besar
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "ID Resto: ${_initialData.id}",
-                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-              ),
-              const Divider(height: 32),
-
-              // --- INFORMASI GAMBAR ---
-              Text(
-                "Gambar:",
-                style: textTheme.titleMedium?.copyWith(color: colorScheme.primary),
-              ),
-              const SizedBox(height: 16),
-
-              // Tampilan Gambar Saat Ini / Gambar Baru
-              _buildImagePreview(context),
-
-              const SizedBox(height: 24),
-              Center(
-                child: FilledButton.icon(
-                  onPressed: _pickImages,
-                  icon: const Icon(Icons.photo_library),
-                  label: Text(_newImages.isEmpty ? "Pilih Gambar Baru (Galeri)" : "Ubah/Tambah ${_newImages.length} Gambar"),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    textStyle: textTheme.labelLarge,
-                  ),
-                ),
-              ),
-              const Divider(height: 48),
-
-              // --- FORM FIELDS UTAMA ---
-              Text("Detail Restoran", style: textTheme.titleLarge),
-              _buildFormSpacer(),
-
-              TextFormField(
-                controller: _shopNameController,
-                decoration: _md3InputDecoration("Nama Toko (Wajib)"),
-                validator: (value) => value!.isEmpty ? 'Nama toko tidak boleh kosong' : null,
-              ),
-              _buildFormSpacer(),
-
-              TextFormField(
-                controller: _foodNameController,
-                decoration: _md3InputDecoration("Nama Makanan/Menu"),
-              ),
-              _buildFormSpacer(),
-
-              TextFormField(
-                controller: _priceRangeController,
-                decoration: _md3InputDecoration("Rentang Harga (Rp)"),
-              ),
-              _buildFormSpacer(),
-
-              TextFormField(
-                controller: _addressController,
-                decoration: _md3InputDecoration("Alamat"),
-                maxLines: 3,
-              ),
-              _buildFormSpacer(),
-
-              TextFormField(
-                controller: _phoneController,
-                decoration: _md3InputDecoration("Nomor Telepon"),
-                keyboardType: TextInputType.phone,
-              ),
-              _buildFormSpacer(),
-
+              Text("Gambar Restoran", style: textTheme.titleLarge),
+              const SizedBox(height: 12),
+              _buildImagePreview(viewModel),
+              const SizedBox(height: 12),
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: TextFormField(
-                      controller: _openHoursController,
-                      decoration: _md3InputDecoration("Jam Buka (contoh: 09:00)"),
+                    child: FilledButton.icon(
+                      onPressed: () => _pickImages(viewModel),
+                      icon: const Icon(Icons.add_photo_alternate),
+                      label: const Text("Tambah Gambar"),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: TextFormField(
-                      controller: _closeHoursController,
-                      decoration: _md3InputDecoration("Jam Tutup (contoh: 21:00)"),
+                    child: FilledButton.icon(
+                      onPressed: viewModel.isLoading
+                          ? null
+                          : () => _updateImages(viewModel),
+                      icon: const Icon(Icons.update),
+                      label: Text(viewModel.isLoading
+                          ? "Mengupdate..."
+                          : "Update Gambar"),
                     ),
                   ),
                 ],
               ),
-              _buildFormSpacer(),
 
-              // Field Food ID
-              TextFormField(
-                controller: _foodIdController,
-                decoration: _md3InputDecoration("Food ID (Jika ada)"),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 40),
-
-              // TOMBOL SIMPAN
-              Center(
-                child: ElevatedButton.icon(
-                  onPressed: viewModel.isLoading ? null : () => _submitUpdate(viewModel),
-                  icon: viewModel.isLoading
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Icon(Icons.save),
-                  label: Text(viewModel.isLoading ? "Menyimpan..." : "Simpan Perubahan"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colorScheme.primary,
-                    foregroundColor: colorScheme.onPrimary,
-                    minimumSize: const Size(double.infinity, 56),
-                    textStyle: textTheme.titleMedium,
-                  ),
-                ),
-              ),
-
-              // Tampilkan pesan error jika ada
-              if (viewModel.errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: Text(
-                    "Error: ${viewModel.errorMessage}",
-                    style: textTheme.bodyLarge?.copyWith(color: colorScheme.error),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+              const Divider(height: 40),
+              _buildTextFields(textTheme, colorScheme),
               const SizedBox(height: 20),
+              _buildSubmitButton(viewModel, colorScheme),
             ],
           ),
         ),
@@ -298,62 +180,112 @@ class _EditFoodPlaceScreenState extends State<EditFoodPlaceScreen> {
     );
   }
 
-  // Widget untuk menampilkan gambar saat ini atau yang baru dipilih
-  Widget _buildImagePreview(BuildContext context) {
+  Widget _buildImagePreview(UpdateFoodPlaceViewModel viewModel) {
     final colorScheme = Theme.of(context).colorScheme;
+    final allImages = [
+      ...viewModel.existingImages
+          .map((url) => Image.network(url, fit: BoxFit.cover)),
+      ...viewModel.newImages
+          .map((file) => Image.file(file, fit: BoxFit.cover)),
+    ];
 
-    if (_newImages.isNotEmpty) {
-      // Tampilkan gambar baru yang dipilih (Horizontal List)
-      return SizedBox(
-        height: 150,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: _newImages.length,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.file(
-                  _newImages[index],
-                  height: 150,
-                  width: 150,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            );
-          },
-        ),
-      );
-    } else if (_initialData.images != null) {
-      // Tampilkan gambar lama
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Image.network(
-          _initialData.images!.imageUrl,
-          height: 150,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => Container(
-            height: 150,
-            color: colorScheme.surfaceContainerLow,
-            child: Center(child: Icon(Icons.broken_image, color: colorScheme.error)),
-          ),
-        ),
-      );
-    } else {
-      // Tidak ada gambar
+    if (allImages.isEmpty) {
       return Container(
         height: 150,
-        width: double.infinity,
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Center(
-          child: Icon(Icons.image_not_supported, size: 40, color: colorScheme.onSurfaceVariant),
-        ),
+        child: const Center(child: Text("Belum ada gambar")),
       );
     }
+
+    return SizedBox(
+      height: 150,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: allImages.length,
+        itemBuilder: (context, index) {
+          final isOld = index < viewModel.existingImages.length;
+          return Stack(
+            children: [
+              Container(
+                margin: const EdgeInsets.only(right: 8),
+                width: 150,
+                height: 150,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: allImages[index],
+                ),
+              ),
+              Positioned(
+                top: 5,
+                right: 5,
+                child: InkWell(
+                  onTap: () => isOld
+                      ? viewModel.removeExistingImage(index)
+                      : viewModel.removeNewImage(
+                      index - viewModel.existingImages.length),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black54,
+                    ),
+                    child: const Icon(Icons.close,
+                        color: Colors.white, size: 18),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTextFields(TextTheme textTheme, ColorScheme colorScheme) {
+    InputDecoration deco(String label) => InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+      border: const OutlineInputBorder(),
+      focusedBorder: OutlineInputBorder(
+        borderSide:
+        BorderSide(color: colorScheme.primary, width: 2),
+      ),
+      filled: true,
+      fillColor: colorScheme.surfaceContainerLow,
+    );
+
+    return Column(
+      children: [
+        TextFormField(controller: _shopNameController, decoration: deco("Nama Resto")),
+        const SizedBox(height: 16),
+        TextFormField(controller: _addressController, decoration: deco("Alamat")),
+        const SizedBox(height: 16),
+        TextFormField(controller: _phoneController, decoration: deco("Nomor Telepon")),
+        const SizedBox(height: 16),
+        TextFormField(controller: _openHoursController, decoration: deco("Jam Buka")),
+        const SizedBox(height: 16),
+        TextFormField(controller: _closeHoursController, decoration: deco("Jam Tutup")),
+      ],
+    );
+  }
+
+  Widget _buildSubmitButton(UpdateFoodPlaceViewModel viewModel, ColorScheme colorScheme) {
+    return Center(
+      child: ElevatedButton.icon(
+        onPressed: viewModel.isLoading ? null : () => _submitUpdate(viewModel),
+        icon: viewModel.isLoading
+            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+            : const Icon(Icons.save),
+        label: Text(viewModel.isLoading ? "Menyimpan..." : "Simpan Perubahan"),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
+          minimumSize: const Size(double.infinity, 56),
+        ),
+      ),
+    );
   }
 }
