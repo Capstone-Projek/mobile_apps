@@ -25,5 +25,6 @@ class CreateFoodPlaceRequest {
     required this.longitude,
     this.foodName,
     this.images,
+
   });
 }

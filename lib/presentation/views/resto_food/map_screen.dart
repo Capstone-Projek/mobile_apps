@@ -114,8 +114,8 @@ class _MapScreenState extends State<MapScreen> {
 
   // FUNGSI UNTUK MEMBANGUN KONTEN DETAIL (Menerima ScrollController)
   Widget _buildDetailContent(RestoPlaceModel place, ScrollController scrollController) {
-    final List<String> imageUrls = place.images != null
-        ? [place.images!.imageUrl]
+    final List<String> imageUrls = place.images.isNotEmpty
+        ? place.images.map((img) => img.imageUrl).toList()
         : [];
 
     final screenHeight = MediaQuery.of(context).size.height;
@@ -316,12 +316,15 @@ class _MapScreenState extends State<MapScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (context) {
-        detailViewModel.fetchFoodPlaceById(foodPlace.id);
+        // ✅ Pindahkan ke microtask agar tidak dipanggil saat build
+        Future.microtask(() {
+          detailViewModel.fetchFoodPlaceById(foodPlace.id);
+        });
 
         return DraggableScrollableSheet(
           initialChildSize: 0.6,
           minChildSize: 0.25,
-          maxChildSize: 1.0, // Sheet bisa full screen
+          maxChildSize: 1.0,
           expand: false,
           builder: (context, scrollController) {
             return ChangeNotifierProvider.value(
@@ -329,27 +332,24 @@ class _MapScreenState extends State<MapScreen> {
               child: Consumer<FoodPlaceDetailViewModel>(
                 builder: (context, vm, child) {
                   if (vm.isLoading) {
-                    return SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.6,
-                      child: Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary)),
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     );
                   }
 
                   if (vm.errorMessage != null || vm.foodPlace == null) {
-                    return SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.6,
-                      child: Center(
-                        child: Text(
-                          vm.errorMessage ?? "Detail tidak ditemukan",
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
+                    return Center(
+                      child: Text(
+                        vm.errorMessage ?? "Detail tidak ditemukan",
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
                         ),
                       ),
                     );
                   }
 
-                  // Kirimkan scrollController ke _buildDetailContent
                   return _buildDetailContent(vm.foodPlace!, scrollController);
                 },
               ),
@@ -359,6 +359,7 @@ class _MapScreenState extends State<MapScreen> {
       },
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
