@@ -66,8 +66,8 @@ class ApiService {
   }
 
   Future<List<FoodListResponseModel>> getFoodList(
-    final String accessToken,
-  ) async {
+      final String accessToken,
+      ) async {
     final response = await http.get(
       Uri.parse("$_baseUrl/food"),
       headers: {
@@ -86,8 +86,8 @@ class ApiService {
   }
 
   Future<List<RestoListResponseModels>> getRestoList(
-    final String accessToken,
-  ) async {
+      final String accessToken,
+      ) async {
     final response = await http.get(
       Uri.parse("$_baseUrl/food-place"),
       headers: {
@@ -109,9 +109,9 @@ class ApiService {
   }
 
   Future<FoodListResponseModel> getSearcFood(
-    final String accessToken,
-    final String searchFood,
-  ) async {
+      final String accessToken,
+      final String searchFood,
+      ) async {
     try {
       final response = await http.get(
         Uri.parse("$_baseUrl/food/search?name=$searchFood"),
@@ -135,9 +135,9 @@ class ApiService {
   }
 
   Future<ChangeProfileResponseModel> changeProfile(
-    String name,
-    String email,
-  ) async {
+      String name,
+      String email,
+      ) async {
     final prefs = await SharedPreferences.getInstance();
     final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
 
