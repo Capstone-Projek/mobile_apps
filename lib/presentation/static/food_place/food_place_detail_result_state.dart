@@ -1,4 +1,4 @@
-import 'package:mobile_apps/data/models/main/resto/resto_food_model.dart';
+import 'package:mobile_apps/data/models/food_place/food_place_detail_response_model.dart';
 
 sealed class FoodPlaceDetailResultState {}
 
@@ -13,7 +13,7 @@ class FoodPlaceDetailErrorState extends FoodPlaceDetailResultState {
 }
 
 class FoodPlaceDetailLoadedState extends FoodPlaceDetailResultState {
-  final RestoPlaceModel data;
+  final FoodPlaceDetailResponseModel data;
 
   FoodPlaceDetailLoadedState({required this.data});
 }

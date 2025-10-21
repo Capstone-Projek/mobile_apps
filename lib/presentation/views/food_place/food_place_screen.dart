@@ -5,15 +5,15 @@ import 'package:provider/provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/auth/user/shared_preferences_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food_place/food_place_list_provider.dart';
 import 'package:mobile_apps/presentation/static/food_place/food_place_list_result_state.dart';
-import 'package:mobile_apps/data/models/food_place/food_place_list_response_model.dart';
+import 'package:mobile_apps/data/models/food_place/food_place_list_response_model.dart' as model;
 
 class Place {
-  final int id;
-  final String name;
-  final String address;
-  final String price;
-  final String image;
-  final LatLng location;
+  final int? id;
+  final String? name;
+  final String? address;
+  final String? price;
+  final String? image;
+  final LatLng? location;
 
   Place({
     required this.id,
@@ -65,14 +65,16 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
     });
   }
 
-  List<Place> _mapApiModelToPlace(List<FoodPlaceListResponseModel> apiData) {
+  List<Place> _mapApiModelToPlace(List<model.FoodPlaceListResponseModel> apiData) {
     return apiData.map((item) {
       return Place(
         id: item.id,
         name: item.shopName,
         address: item.address,
         price: item.priceRange,
-        image: item.images.imageUrl,
+        image: (item.images != null && item.images!.isNotEmpty)
+          ? item.images![0].imageUrl
+          : null,
         location: LatLng(
           double.tryParse(item.latitude.toString()) ?? 0.0,
           double.tryParse(item.longitude.toString()) ?? 0.0,
@@ -90,7 +92,10 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
       _lastTappedIndex = index;
     });
 
-    _animateToLocation(places[index].location);
+    final loc = places[index].location;
+    if (loc != null) {
+      _animateToLocation(loc);
+    }
 
     _scrollController.animateTo(
       index * 140,
@@ -146,7 +151,11 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
             if (places.isNotEmpty && !_hasFittedCamera) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 final bounds = LatLngBounds.fromPoints(
-                  places.map((e) => e.location).toList(),
+                  places
+                      .map((e) => e.location)
+                      .where((loc) => loc != null)
+                      .cast<LatLng>()
+                      .toList(),
                 );
                 _mapController.fitCamera(CameraFit.bounds(bounds: bounds));
                 _hasFittedCamera = true;
@@ -154,10 +163,10 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
             }
 
             final visiblePlaces = _visibleBounds == null
-                ? places
-                : places
-                      .where((p) => _visibleBounds!.contains(p.location))
-                      .toList();
+              ? places
+              : places
+                  .where((p) => p.location != null && _visibleBounds!.contains(p.location!))
+                  .toList();
 
             return Column(
               children: [
@@ -187,7 +196,7 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                           final bool showLabel = _mapZoom >= 13;
 
                           return Marker(
-                            point: place.location,
+                            point: place.location!,
                             width: 120,
                             height: 80,
                             child: GestureDetector(
@@ -215,7 +224,7 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                                       ],
                                     ),
                                     child: Text(
-                                      place.name,
+                                      place.name!,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 8,
@@ -302,7 +311,7 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                                         bottomLeft: Radius.circular(12),
                                       ),
                                       child: Image.network(
-                                        place.image,
+                                        place.image!,
                                         width: 100,
                                         height: 100,
                                         fit: BoxFit.cover,
@@ -332,7 +341,7 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              place.name,
+                                              place.name!,
                                               style: TextStyle(
                                                 color: isActive
                                                     ? Colors.white
@@ -354,7 +363,7 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                                                 const SizedBox(width: 4),
                                                 Expanded(
                                                   child: Text(
-                                                    place.address,
+                                                    place.address!,
                                                     style: TextStyle(
                                                       color: isActive
                                                           ? Colors.white

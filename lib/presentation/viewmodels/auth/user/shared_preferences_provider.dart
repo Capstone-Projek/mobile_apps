@@ -32,6 +32,9 @@ class SharedPreferencesProvider extends ChangeNotifier {
   String? _showRole;
   String? get showRole => _showRole;
 
+  int? _showUserId;
+  int? get showUserId => _showUserId;
+
   Future<void> setShowMain(bool value) async {
     try {
       await _service.showMainScreen(value);
@@ -168,11 +171,31 @@ class SharedPreferencesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> setShowUserId(int showUserId) async {
+    try {
+      await _service.showUserId(showUserId);
+      _message = "showUserId successfully received";
+    } catch (e) {
+      _message = "Failed to get your showUserId";
+    }
+  }
+
+  void getShowUserId() async {
+    try {
+      _showUserId = _service.getShowUserId();
+      _message = "userId successfully received";
+    } catch (e) {
+      _message = "Failed to get your userId";
+    }
+    notifyListeners();
+  }
+
   Future<void> loadUserData() async {
     _prefs = await SharedPreferences.getInstance();
     _showUsername = SharedPreferencesService(_prefs).getshowUsername();
     _showEmail = SharedPreferencesService(_prefs).getShowEmail();
     _showRole = SharedPreferencesService(_prefs).getShowRole();
+    _showUserId = SharedPreferencesService(_prefs).getShowUserId();
     notifyListeners();
   }
 

@@ -6,11 +6,14 @@ import 'package:mobile_apps/data/models/auth/login/login_response_model.dart';
 import 'package:mobile_apps/data/models/auth/login/user_login_request.dart';
 import 'package:mobile_apps/data/models/auth/register/register_response_model.dart';
 import 'package:mobile_apps/data/models/auth/register/user_register_request.dart';
+import 'package:mobile_apps/data/models/food_place/food_place_detail_response_model.dart';
 import 'package:mobile_apps/data/models/main/food/edit_food_response.dart';
 import 'package:mobile_apps/data/models/main/food/food_model.dart';
 import 'package:mobile_apps/data/models/main/home/food_list_response_models.dart';
 import 'package:mobile_apps/data/models/main/home/resto_list_response_models.dart';
 import 'package:mobile_apps/data/models/main/profile/change_profile_response_model.dart';
+import 'package:mobile_apps/data/models/review/review_response_model.dart';
+import 'package:mobile_apps/data/models/review/create_review_response_model.dart';
 import 'package:mobile_apps/main.dart';
 import 'package:mobile_apps/presentation/static/main/navigation_route.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -668,6 +671,52 @@ class ApiService {
     }
   }
 
+  Future<List<FoodPlaceListResponseModel>> getAllFoodPlaceByFoodId(
+    final int foodId,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
+    
+    final response = await http.get(
+      Uri.parse("$_baseUrl/get-food-place/food/$foodId"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => FoodPlaceListResponseModel.fromJson(e)).toList();
+    } else {
+      throw Exception("Failed to load food places");
+    }
+  }
+
+    Future<FoodPlaceDetailResponseModel> getFoodPlaceDetailById(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
+
+    final response = await http.get(
+      Uri.parse("$_baseUrl/get-food-place/$id"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $accessToken",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      return FoodPlaceDetailResponseModel.fromJson(data);
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      await _handleUnauthorized();
+      throw Exception("Unauthorized - Redirecting to login");
+    } else {
+      throw Exception("Failed to get food place with id: $id");
+    }
+  }
+
+
   Future<FoodModel> getFoodById(int id) async {
     final prefs = await SharedPreferences.getInstance();
     final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
@@ -685,6 +734,71 @@ class ApiService {
       return FoodModel.fromJson(data);
     } else {
       throw Exception("Failed to get food place with id: $id");
+    }
+  }
+
+  Future<List<ReviewResponseModel>> getReviewByFoodId(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
+
+    final response = await http.get(
+      Uri.parse("$_baseUrl/food/$id/review"),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+
+      return data.map((e) => ReviewResponseModel.fromJson(e)).toList();
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      await _handleUnauthorized();
+      throw Exception("Unauthorized - Redirecting to login");
+    } else {
+      throw Exception("Failed to load food list");
+    }
+  }
+
+  Future<CreateReviewResponseModel> createReview({
+    required int idFood,
+    required String reviewDesc,
+    required String idUser,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('MY_ACCESS_TOKEN');
+
+    if (accessToken == null) {
+      throw Exception("Token tidak ditemukan. Silakan login kembali.");
+    }
+
+    final uri = Uri.parse("$_baseUrl/food/$idFood/review");
+
+    final response = await http.post(
+      uri,
+      headers: {
+        "Authorization": "Bearer $accessToken",
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "id_food": idFood,
+        "review_desc": reviewDesc,
+        "id_user": idUser,
+      }),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final body = jsonDecode(response.body);
+      return CreateReviewResponseModel.fromJson(body);
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      await _handleUnauthorized();
+      throw Exception("Unauthorized - Redirecting to login");
+    } else {
+      throw Exception(
+        "Gagal menambahkan ulasan. [${response.statusCode}] ${response.body}",
+      );
     }
   }
 

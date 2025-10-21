@@ -15,7 +15,7 @@ class FoodPlaceDetailProvider extends ChangeNotifier {
       _resultState = FoodPlaceDetailLoadingState();
       notifyListeners();
 
-      final result = await _apiService.getFoodPlaceById(id);
+      final result = await _apiService.getFoodPlaceDetailById(id);
 
       _resultState = FoodPlaceDetailLoadedState(data: result);
     } catch (e) {

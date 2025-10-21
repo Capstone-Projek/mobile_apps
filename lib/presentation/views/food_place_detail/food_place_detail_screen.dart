@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/food_detail_provider.dart';
 import 'package:provider/provider.dart';
@@ -71,7 +70,7 @@ class _FoodPlaceDetailScreenState extends State<FoodPlaceDetailScreen> {
                   Stack(
                     children: [
                       Image.network(
-                        place.images?.imageUrl ?? '',
+                        place.images?.isNotEmpty == true ? place.images!.first.imageUrl : '',
                         width: double.infinity,
                         height: 220,
                         fit: BoxFit.cover,
@@ -224,8 +223,6 @@ class _FoodPlaceDetailScreenState extends State<FoodPlaceDetailScreen> {
                             foodDetail
                           ];
 
-                          log("Safe food list length: ${safeFoodDetail.length}");
-
                           return ListView.builder(
                             scrollDirection: Axis.horizontal,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -241,7 +238,7 @@ class _FoodPlaceDetailScreenState extends State<FoodPlaceDetailScreen> {
                                   borderRadius: BorderRadius.circular(10),
                                   child: InkWell(
                                     onTap: () {
-                                      Navigator.pushNamed(context, '/food-detail');
+                                      Navigator.pushNamed(context, '/food-detail', arguments: item.idFood);
                                     },
                                     borderRadius: BorderRadius.circular(10),
                                     child: Container(

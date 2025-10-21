@@ -224,7 +224,11 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
                         return RecommendationFoodWidget(
                           recomendationFoodModel: item,
                           onTap: () {
-                            Navigator.pushNamed(context, '/food-detail');
+                            Navigator.pushNamed(
+                              context, 
+                              '/food-detail',
+                              arguments: item.idFood
+                            );
                           },
                         );
                       },
@@ -255,7 +259,11 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
                           return RecommendationFoodWidget(
                             recomendationFoodModel: item,
                             onTap: () {
-                              Navigator.pushNamed(context, '/food-detail');
+                              Navigator.pushNamed(
+                                context, 
+                                '/food-detail', 
+                                arguments: item.idFood
+                              );
                             },
                           );
                         },

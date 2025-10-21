@@ -10,6 +10,7 @@ import 'package:mobile_apps/presentation/viewmodels/food/edit_food_provider.dart
 import 'package:mobile_apps/presentation/viewmodels/food/food_list_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/food_detail_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/search_food_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/food_place/food_place_list_by_food_id_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/beranda/home_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/camera/camera_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/profile/setting_state_provider.dart';
@@ -21,6 +22,8 @@ import 'package:mobile_apps/presentation/viewmodels/profile/change_profile_provi
 import 'package:mobile_apps/presentation/viewmodels/resto/food_place_detail_view_model.dart';
 import 'package:mobile_apps/presentation/viewmodels/resto/resto_food_viewmodel.dart';
 import 'package:mobile_apps/presentation/viewmodels/resto/update_food_place_viewmodel.dart';
+import 'package:mobile_apps/presentation/viewmodels/review/create_review_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/review/review_by_food_provider.dart';
 import 'package:mobile_apps/presentation/views/login/login_screen.dart';
 import 'package:mobile_apps/presentation/views/main/main_screen.dart';
 import 'package:mobile_apps/presentation/views/main/profile/account-information/change_password_screen.dart';
@@ -106,10 +109,19 @@ void main() async {
           create: (context) => FoodPlaceListProvider(context.read<ApiService>()),
         ),
         ChangeNotifierProvider(
+          create: (context) => FoodPlaceListByFoodIdProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
           create: (context) => FoodPlaceDetailProvider(context.read<ApiService>()),
         ),
         ChangeNotifierProvider(
           create: (context) => FoodDetailProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ReviewProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => CreateReviewProvider(context.read<ApiService>()),
         ),
       ],
       child: MyApp(initialRoute: route),
