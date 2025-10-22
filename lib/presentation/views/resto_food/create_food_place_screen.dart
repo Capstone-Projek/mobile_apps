@@ -1,0 +1,321 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+
+// Ganti dengan path ke model dan viewmodel Anda yang sebenarnya
+import '../../../data/models/main/resto/create_food_place_request.dart';
+import '../../viewmodels/resto/create_food_place_view_model.dart';
+// import '../../../data/models/main/resto/resto_food_model.dart'; // Sudah diakses via ViewModel
+
+class CreateFoodPlaceScreen extends StatefulWidget {
+  const CreateFoodPlaceScreen({super.key});
+
+  @override
+  State<CreateFoodPlaceScreen> createState() => _CreateFoodPlaceScreenState();
+}
+
+class _CreateFoodPlaceScreenState extends State<CreateFoodPlaceScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final ImagePicker _picker = ImagePicker();
+
+  // Controllers untuk input
+  late TextEditingController _shopNameController;
+  late TextEditingController _addressController;
+  late TextEditingController _phoneController;
+  late TextEditingController _openHoursController;
+  late TextEditingController _closeHoursController;
+  late TextEditingController _priceRangeController;
+  late TextEditingController _foodNameController;
+
+  // Controllers untuk Latitude dan Longitude
+  late TextEditingController _latitudeController;
+  late TextEditingController _longitudeController;
+
+  // State untuk gambar baru
+  List<File> _newImages = [];
+
+  // Data inisial dari peta
+  bool _isDataInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Inisialisasi awal controller
+    _shopNameController = TextEditingController();
+    _addressController = TextEditingController();
+    _phoneController = TextEditingController();
+    _openHoursController = TextEditingController();
+    _closeHoursController = TextEditingController();
+    _priceRangeController = TextEditingController();
+    _foodNameController = TextEditingController();
+
+    // Inisialisasi Controller Lat/Long dengan nilai default 0.0
+    _latitudeController = TextEditingController(text: '0.0');
+    _longitudeController = TextEditingController(text: '0.0');
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!_isDataInitialized) {
+      final Map<String, dynamic>? args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+      if (args != null) {
+        // TANGKAP KOORDINAT DARI MAP SCREEN
+        final double? lat = args['latitude'] as double?;
+        final double? long = args['longitude'] as double?;
+
+        if (lat != null && long != null) {
+          // Isi Controller dengan nilai yang ditangkap
+          _latitudeController.text = lat.toString();
+          _longitudeController.text = long.toString();
+        }
+      }
+      _isDataInitialized = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    _shopNameController.dispose();
+    _addressController.dispose();
+    _phoneController.dispose();
+    _openHoursController.dispose();
+    _closeHoursController.dispose();
+    _priceRangeController.dispose();
+    _foodNameController.dispose();
+    _latitudeController.dispose();
+    _longitudeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickImages() async {
+    final List<XFile>? selectedImages = await _picker.pickMultiImage(imageQuality: 75);
+    if (selectedImages != null && selectedImages.isNotEmpty) {
+      setState(() {
+        _newImages.addAll(selectedImages.map((x) => File(x.path)).toList());
+      });
+    }
+  }
+
+  void _removeNewImage(int index) {
+    setState(() {
+      _newImages.removeAt(index);
+    });
+  }
+
+
+  void _submitCreate(CreateFoodPlaceViewModel viewModel) async {
+    if (!_formKey.currentState!.validate()) return;
+
+    // Konversi Lat/Long ke double
+    final double? latitude = double.tryParse(_latitudeController.text);
+    final double? longitude = double.tryParse(_longitudeController.text);
+
+    if (latitude == null || longitude == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Koordinat Latitude/Longitude tidak valid.")),
+      );
+      return;
+    }
+
+    final requestData = CreateFoodPlaceRequest(
+      // Asumsikan foodId dicarikan / tidak diwajibkan di form create
+      foodId: null,
+      shopName: _shopNameController.text,
+      address: _addressController.text,
+      phone: _phoneController.text,
+      openHours: _openHoursController.text,
+      closeHours: _closeHoursController.text,
+      priceRange: _priceRangeController.text,
+      latitude: latitude,
+      longitude: longitude,
+      foodName: _foodNameController.text,
+      images: _newImages
+    );
+
+    await viewModel.createFoodPlace(requestData);
+
+    if (viewModel.createdFoodPlace != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("${viewModel.createdFoodPlace!.shopName} berhasil ditambahkan!")),
+      );
+      // Kembali ke MapScreen setelah berhasil
+      Navigator.pop(context);
+    } else if (viewModel.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: ${viewModel.errorMessage!}")),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = context.watch<CreateFoodPlaceViewModel>();
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Tambah Resto Baru"),
+      ),
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Lokasi (Otomatis dari Peta)", style: textTheme.titleLarge),
+              const SizedBox(height: 12),
+
+              // Input Latitude/Longitude
+              Row(
+                children: [
+                  Expanded(child: _buildTextField(controller: _latitudeController, label: "Latitude", keyboardType: TextInputType.number, isRequired: true)),
+                  const SizedBox(width: 16),
+                  Expanded(child: _buildTextField(controller: _longitudeController, label: "Longitude", keyboardType: TextInputType.number, isRequired: true)),
+                ],
+              ),
+              const Divider(height: 40),
+
+              Text("Detail Restoran", style: textTheme.titleLarge),
+              const SizedBox(height: 12),
+              _buildTextField(controller: _shopNameController, label: "Nama Resto", isRequired: true),
+              const SizedBox(height: 16),
+              _buildTextField(controller: _foodNameController, label: "Nama Makanan (Menu Utama)", isRequired: true),
+              const SizedBox(height: 16),
+              _buildTextField(controller: _addressController, label: "Alamat"),
+              const SizedBox(height: 16),
+              _buildTextField(controller: _phoneController, label: "Nomor Telepon", keyboardType: TextInputType.phone),
+              const SizedBox(height: 16),
+              _buildTextField(controller: _priceRangeController, label: "Rentang Harga (ex: 25.000 - 50.000)"),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(child: _buildTextField(controller: _openHoursController, label: "Jam Buka (ex: 09.00)")),
+                  const SizedBox(width: 16),
+                  Expanded(child: _buildTextField(controller: _closeHoursController, label: "Jam Tutup (ex: 20.00)")),
+                ],
+              ),
+              const Divider(height: 40),
+
+              Text("Gambar", style: textTheme.titleLarge),
+              const SizedBox(height: 12),
+              _buildImagePreview(),
+              const SizedBox(height: 16),
+              Center(
+                child: FilledButton.icon(
+                  onPressed: _pickImages,
+                  icon: const Icon(Icons.add_photo_alternate),
+                  label: const Text("Pilih Gambar"),
+                ),
+              ),
+
+              const SizedBox(height: 40),
+              _buildSubmitButton(viewModel, colorScheme),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    bool isRequired = false,
+    bool readOnly = false,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        filled: true,
+      ),
+      keyboardType: keyboardType,
+      readOnly: readOnly,
+      validator: (value) {
+        if (isRequired && (value == null || value.isEmpty)) {
+          return '$label wajib diisi.';
+        }
+        return null;
+      },
+    );
+  }
+
+
+  Widget _buildImagePreview() {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    if (_newImages.isEmpty) {
+      return Container(
+        height: 100,
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(child: Text("Belum ada gambar yang dipilih")),
+      );
+    }
+
+    return SizedBox(
+      height: 100,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _newImages.length,
+        itemBuilder: (context, index) {
+          return Stack(
+            children: [
+              Container(
+                margin: const EdgeInsets.only(right: 8),
+                width: 100,
+                height: 100,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(_newImages[index], fit: BoxFit.cover),
+                ),
+              ),
+              Positioned(
+                top: 5,
+                right: 5,
+                child: InkWell(
+                  onTap: () => _removeNewImage(index),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black54,
+                    ),
+                    child: const Icon(Icons.close, color: Colors.white, size: 18),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSubmitButton(CreateFoodPlaceViewModel viewModel, ColorScheme colorScheme) {
+    return Center(
+      child: ElevatedButton.icon(
+        onPressed: viewModel.isLoading ? null : () => _submitCreate(viewModel),
+        icon: viewModel.isLoading
+            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+            : const Icon(Icons.add),
+        label: Text(viewModel.isLoading ? "Menambahkan..." : "Tambahkan Resto"),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
+          minimumSize: const Size(double.infinity, 56),
+        ),
+      ),
+    );
+  }
+}

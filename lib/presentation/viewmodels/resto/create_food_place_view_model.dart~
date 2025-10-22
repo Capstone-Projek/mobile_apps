@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-// Ganti dengan path yang benar
 import '../../../core/service/api/api_service.dart';
 import '../../../data/models/main/resto/create_food_place_request.dart';
+// ❌ Hapus import CreateFoodPlaceResponse, karena sudah tidak digunakan
+// import '../../../data/models/main/resto/create_food_place_response.dart';
 
-// Import model response yang benar yang merepresentasikan output akhir dari BE
+// ⭐️ Import model response yang baru dan benar
 import '../../../data/models/main/resto/resto_food_model.dart';
 
 
@@ -17,19 +18,15 @@ class CreateFoodPlaceViewModel extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
-  // State untuk menyimpan RestoPlaceModel yang baru dibuat (termasuk gambar)
+  // ⭐️ PERUBAHAN: Sekarang menyimpan RestoPlaceModel yang lengkap
   RestoPlaceModel? _createdFoodPlace;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  // Getter yang mengembalikan RestoPlaceModel lengkap
+  // ⭐️ PERUBAHAN: Getter mengembalikan RestoPlaceModel
   RestoPlaceModel? get createdFoodPlace => _createdFoodPlace;
 
-  /**
-   * Memproses pembuatan tempat makan baru, termasuk pengiriman data dan file gambar.
-   * Karena BE sudah terintegrasi, ini adalah operasi satu langkah di sisi klien.
-   */
   Future<void> createFoodPlace(CreateFoodPlaceRequest request) async {
     _isLoading = true;
     _errorMessage = null;
@@ -37,16 +34,15 @@ class CreateFoodPlaceViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Panggil API Service yang melakukan request Multipart (data + file)
+      // API Service sekarang mengembalikan RestoPlaceModel
       final response = await _apiService.createFoodPlace(request);
 
-      // Simpan RestoPlaceModel yang dikembalikan oleh BE
       _createdFoodPlace = response;
     } catch (e) {
-      // Penanganan error, menampilkan pesan yang lebih mudah dibaca
+      // Penanganan error yang lebih bersih
       _errorMessage = e.toString().contains('Exception:')
           ? e.toString().replaceFirst('Exception:', '').trim()
-          : "Gagal membuat tempat makan. Mohon coba lagi.";
+          : "Gagal membuat tempat makan.";
     } finally {
       _isLoading = false;
       notifyListeners();

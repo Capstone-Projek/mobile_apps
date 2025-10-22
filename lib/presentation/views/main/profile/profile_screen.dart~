@@ -174,12 +174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                       },
                     ),
-                    SettingButtonWidget(title: "Data Toko", onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        NavigationRoute.mapFoodPlaceRoute.path,
-                      );
-                    }),
+                    SettingButtonWidget(title: "Data Toko", onTap: () {}),
                   ],
                   SizedBox(height: 56),
                   ButtonNavigateWidget(
