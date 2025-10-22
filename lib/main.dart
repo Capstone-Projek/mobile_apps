@@ -10,6 +10,7 @@ import 'package:mobile_apps/presentation/viewmodels/food/edit_food_provider.dart
 import 'package:mobile_apps/presentation/viewmodels/food/food_list_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/food_detail_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/search_food_provider.dart';
+import 'package:mobile_apps/presentation/viewmodels/food_place/delete_food_place_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food_place/food_place_list_by_food_id_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/beranda/home_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/camera/camera_provider.dart';
@@ -113,13 +114,16 @@ void main() async {
           create: (context) => DeleteFoodProvider(context.read<ApiService>()),
         ),
         ChangeNotifierProvider(
-          create: (context) => FoodPlaceListProvider(context.read<ApiService>()),
+          create: (context) =>
+              FoodPlaceListProvider(context.read<ApiService>()),
         ),
         ChangeNotifierProvider(
-          create: (context) => FoodPlaceListByFoodIdProvider(context.read<ApiService>()),
+          create: (context) =>
+              FoodPlaceListByFoodIdProvider(context.read<ApiService>()),
         ),
         ChangeNotifierProvider(
-          create: (context) => FoodPlaceDetailProvider(context.read<ApiService>()),
+          create: (context) =>
+              FoodPlaceDetailProvider(context.read<ApiService>()),
         ),
         ChangeNotifierProvider(
           create: (context) => FoodDetailProvider(context.read<ApiService>()),
@@ -129,6 +133,10 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (context) => CreateReviewProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) =>
+              DeleteFoodPlaceProvider(context.read<ApiService>()),
         ),
       ],
       child: MyApp(initialRoute: route),
@@ -189,7 +197,7 @@ class _MyAppState extends State<MyApp> {
                 ChangePasswordScreen(),
             NavigationRoute.editProfileRoute.path: (context) =>
                 EditProfileScreen(),
-            NavigationRoute.foodDetailRoute.path: (context,) =>
+            NavigationRoute.foodDetailRoute.path: (context) =>
                 FoodDetailScreen(),
             NavigationRoute.foodPlaceDetailRoute.path: (context) =>
                 FoodPlaceDetailScreen(),

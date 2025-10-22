@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile_apps/data/models/auth/login/login_response_model.dart';
 import 'package:mobile_apps/data/models/auth/login/user_login_request.dart';
@@ -236,6 +237,8 @@ class ApiService {
       },
     );
 
+    debugPrint(response.body.toString());
+
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((e) => RestoPlaceModel.fromJson(e)).toList();
@@ -349,7 +352,7 @@ class ApiService {
     }
 
     final response = await http.delete(
-      Uri.parse("$_baseUrl/food-places/$id"),
+      Uri.parse("$_baseUrl/food-place/$id"),
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $accessToken",

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
+import 'package:mobile_apps/presentation/viewmodels/food_place/delete_food_place_provider.dart';
 import 'package:provider/provider.dart';
 
 // Ganti dengan path ke ViewModel dan Model Anda yang sebenarnya
@@ -28,8 +30,8 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     // Panggil fetchFoodPlaces saat screen pertama kali dibuka
-    Future.microtask(() =>
-        Provider.of<MapViewModel>(context, listen: false).fetchFoodPlaces()
+    Future.microtask(
+      () => Provider.of<MapViewModel>(context, listen: false).fetchFoodPlaces(),
     );
   }
 
@@ -48,7 +50,9 @@ class _MapScreenState extends State<MapScreen> {
     // 2. Tampilkan notifikasi
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text("Koordinat ditangkap: Lat ${latLng.latitude.toStringAsFixed(4)}, Long ${latLng.longitude.toStringAsFixed(4)}"),
+        content: Text(
+          "Koordinat ditangkap: Lat ${latLng.latitude.toStringAsFixed(4)}, Long ${latLng.longitude.toStringAsFixed(4)}",
+        ),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -56,7 +60,9 @@ class _MapScreenState extends State<MapScreen> {
     // 3. Navigasi ke halaman Form Insert dengan membawa koordinat
     Navigator.pushNamed(
       context,
-      NavigationRoute.createFoodPlace.path, // Ganti dengan path route create Anda
+      NavigationRoute
+          .createFoodPlace
+          .path, // Ganti dengan path route create Anda
       arguments: {'latitude': latLng.latitude, 'longitude': latLng.longitude},
     ).then((_) {
       // Muat ulang data peta setelah kembali dari form
@@ -65,7 +71,11 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   // Helper untuk membuat baris detail dengan ikon berwarna Primary MD3
-  Widget _buildDetailRow({required IconData icon, required String label, required String value}) {
+  Widget _buildDetailRow({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -103,7 +113,11 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   // Helper untuk membuat card info kecil (Jam/Harga) dengan MD3 Card
-  Widget _buildInfoCard({required IconData icon, required String title, required String subtitle}) {
+  Widget _buildInfoCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -139,9 +153,13 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   // FUNGSI UNTUK MEMBANGUN KONTEN DETAIL
-  Widget _buildDetailContent(RestoPlaceModel place, ScrollController scrollController) {
+  Widget _buildDetailContent(
+    RestoPlaceModel place,
+    ScrollController scrollController,
+  ) {
     // ⭐️ Penanganan List<ImageInfo> nullable
-    final List<String> imageUrls = place.images != null && place.images!.isNotEmpty
+    final List<String> imageUrls =
+        place.images != null && place.images!.isNotEmpty
         ? place.images!.map((img) => img.imageUrl).toList()
         : [];
 
@@ -186,14 +204,23 @@ class _MapScreenState extends State<MapScreen> {
                             child: Image.network(
                               imageUrls[index],
                               fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(child: CircularProgressIndicator(
-                                  color: colorScheme.primary,
-                                ));
-                              },
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Center(
+                                      child: CircularProgressIndicator(
+                                        color: colorScheme.primary,
+                                      ),
+                                    );
+                                  },
                               errorBuilder: (context, error, stackTrace) {
-                                return Center(child: Icon(Icons.broken_image, size: 50, color: colorScheme.onSurfaceVariant));
+                                return Center(
+                                  child: Icon(
+                                    Icons.broken_image,
+                                    size: 50,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                );
                               },
                             ),
                           ),
@@ -209,8 +236,17 @@ class _MapScreenState extends State<MapScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.image_not_supported, size: 50, color: colorScheme.onSurfaceVariant),
-                          Text("Gambar tidak tersedia", style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
+                          Icon(
+                            Icons.image_not_supported,
+                            size: 50,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          Text(
+                            "Gambar tidak tersedia",
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -249,7 +285,8 @@ class _MapScreenState extends State<MapScreen> {
                             child: _buildInfoCard(
                               icon: Icons.schedule,
                               title: "Jam Operasi",
-                              subtitle: "${place.openHours} - ${place.closeHours}",
+                              subtitle:
+                                  "${place.openHours} - ${place.closeHours}",
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -293,22 +330,63 @@ class _MapScreenState extends State<MapScreen> {
 
                       // Tombol Aksi (Edit)
                       Center(
-                        child: FilledButton.icon(
-                          onPressed: () {
-                            Navigator.pop(context); // Tutup bottom sheet
+                        child: Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              FilledButton.icon(
+                                onPressed: () {
+                                  Navigator.pop(context); // Tutup bottom sheet
 
-                            // NAVIGASI KE HALAMAN EDIT
-                            Navigator.pushNamed(
-                              context,
-                              NavigationRoute.editFoodPlaceRoute.path,
-                              arguments: place,
-                            );
-                          },
-                          icon: const Icon(Icons.edit),
-                          label: const Text('Edit Resto'),
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                            textStyle: textTheme.titleMedium,
+                                  // NAVIGASI KE HALAMAN EDIT
+                                  Navigator.pushNamed(
+                                    context,
+                                    NavigationRoute.editFoodPlaceRoute.path,
+                                    arguments: place,
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Colors.white,
+                                ),
+                                label: const Text(
+                                  'Edit Resto',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                style: FilledButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                  backgroundColor:
+                                      JejakRasaColor.secondary.color,
+                                ),
+                              ),
+
+                              FilledButton.icon(
+                                onPressed: () {
+                                  Navigator.pop(context);
+
+                                  // NAVIGASI KE HALAMAN EDIT
+                                  _showDeleteConfirmation(context, place.id);
+                                },
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.white,
+                                ),
+                                label: const Text(
+                                  'Hapus Resto',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                style: FilledButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                  backgroundColor: JejakRasaColor.error.color,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -326,7 +404,10 @@ class _MapScreenState extends State<MapScreen> {
 
   // Fungsi untuk menampilkan detail di bottom sheet
   void _showDetailSheet(BuildContext context, RestoPlaceModel foodPlace) {
-    final detailViewModel = Provider.of<FoodPlaceDetailViewModel>(context, listen: false);
+    final detailViewModel = Provider.of<FoodPlaceDetailViewModel>(
+      context,
+      listen: false,
+    );
     detailViewModel.clearData();
 
     showModalBottomSheet(
@@ -381,22 +462,29 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     // Feedback visual untuk FAB
-    final fabTooltip = _isAddingMode ? "Batal Menangkap Lokasi" : "Tambah Resto Baru";
+    final fabTooltip = _isAddingMode
+        ? "Batal Menangkap Lokasi"
+        : "Tambah Resto Baru";
     final fabIcon = _isAddingMode ? Icons.close : Icons.add;
     final fabColor = _isAddingMode ? colorScheme.error : colorScheme.primary;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Peta Tempat Makan"),
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
-        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+        ),
+        title: Text(
+          'Peta Tempat Makan',
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall!.copyWith(color: Colors.white),
+        ),
       ),
 
       // ⭐️ FLOATING ACTION BUTTON untuk mengaktifkan mode tap
@@ -409,7 +497,9 @@ class _MapScreenState extends State<MapScreen> {
           if (_isAddingMode) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text("Mode Tambah Resto Aktif! Ketuk di Peta untuk menangkap koordinat."),
+                content: Text(
+                  "Mode Tambah Resto Aktif! Ketuk di Peta untuk menangkap koordinat.",
+                ),
                 duration: Duration(seconds: 3),
               ),
             );
@@ -423,11 +513,15 @@ class _MapScreenState extends State<MapScreen> {
       body: Consumer<MapViewModel>(
         builder: (context, mapVM, child) {
           if (mapVM.isLoading) {
-            return Center(child: CircularProgressIndicator(color: colorScheme.primary));
+            return Center(
+              child: CircularProgressIndicator(color: colorScheme.primary),
+            );
           }
 
           if (mapVM.errorMessage != null) {
-            return Center(child: Text("Gagal memuat data: ${mapVM.errorMessage}"));
+            return Center(
+              child: Text("Gagal memuat data: ${mapVM.errorMessage}"),
+            );
           }
 
           final markers = mapVM.foodPlaces.map((place) {
@@ -443,11 +537,19 @@ class _MapScreenState extends State<MapScreen> {
                   children: [
                     // Label Marker MD3 Style
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                        color: colorScheme.surfaceContainerHigh.withOpacity(0.9),
+                        color: colorScheme.surfaceContainerHigh.withOpacity(
+                          0.9,
+                        ),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: colorScheme.onSurface, width: 0.5),
+                        border: Border.all(
+                          color: colorScheme.onSurface,
+                          width: 0.5,
+                        ),
                       ),
                       child: Text(
                         place.shopName,
@@ -484,6 +586,53 @@ class _MapScreenState extends State<MapScreen> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, int foodId) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Konfirmasi Hapus'),
+        content: const Text('Apakah Anda yakin ingin menghapus data ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              // Close the dialog first
+              Navigator.pop(dialogContext);
+
+              // Perform deletion
+              final deleteProvider = context.read<DeleteFoodPlaceProvider>();
+              final message = await deleteProvider.deleteFoodPlace(foodId);
+
+              // Check if the context is still mounted
+              if (context.mounted) {
+                // Show SnackBar using the main MapScreen context
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(message),
+                    backgroundColor: deleteProvider.errorMessage == null
+                        ? Colors.green
+                        : Colors.red,
+                  ),
+                );
+
+                // Refresh the map data
+                Provider.of<MapViewModel>(
+                  context,
+                  listen: false,
+                ).fetchFoodPlaces();
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Hapus'),
+          ),
+        ],
       ),
     );
   }
