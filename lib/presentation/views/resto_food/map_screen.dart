@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
 import 'package:mobile_apps/presentation/viewmodels/food_place/delete_food_place_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:geolocator/geolocator.dart';
 
 // Ganti dengan path ke ViewModel dan Model Anda yang sebenarnya
 import '../../../data/models/main/resto/resto_food_model.dart';
@@ -19,20 +20,81 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  // Koordinat default (misalnya, pusat kota)
-  static const LatLng _initialCenter = LatLng(-7.967, 112.632);
-  final MapController _mapController = MapController(); // Controller untuk map
-
-  // ⭐️ State BARU untuk melacak mode tambah resto
+  // ⭐️ PERBAIKAN 1: Gunakan koordinat default yang aman sebagai cadangan
+  // Koordinat default (misalnya, Jakarta)
+  final LatLng _initialCenter = const LatLng(-6.2088, 106.8456); // Default ke Jakarta
+  LatLng? _currentCenter; // posisi dinamis dari GPS
+  final MapController _mapController = MapController();
   bool _isAddingMode = false;
+
 
   @override
   void initState() {
     super.initState();
-    // Panggil fetchFoodPlaces saat screen pertama kali dibuka
+    _determinePosition(); // ambil lokasi user
     Future.microtask(
-      () => Provider.of<MapViewModel>(context, listen: false).fetchFoodPlaces(),
+          () => Provider.of<MapViewModel>(context, listen: false).fetchFoodPlaces(),
     );
+  }
+
+  /// 🔹 Ambil posisi GPS user
+  Future<void> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Cek apakah GPS aktif
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (mounted) { // Tambahkan pengecekan mounted
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Layanan lokasi tidak aktif. Aktifkan GPS Anda.')),
+        );
+      }
+      return;
+    }
+
+    // Cek permission
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        if (mounted) { // Tambahkan pengecekan mounted
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Izin lokasi ditolak.')),
+          );
+        }
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (mounted) { // Tambahkan pengecekan mounted
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Izin lokasi ditolak permanen. Aktifkan dari pengaturan.')),
+        );
+      }
+      return;
+    }
+
+    // Dapatkan posisi
+    final position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    final newCenter = LatLng(position.latitude, position.longitude);
+    if (mounted) { // Hanya panggil setState jika widget masih mounted
+      setState(() => _currentCenter = newCenter);
+    }
+
+
+    // Pindahkan peta ke lokasi user
+    // Gunakan try-catch karena move bisa error jika dipanggil terlalu cepat
+    try {
+      _mapController.move(newCenter, 15);
+    } catch (e) {
+      // Biarkan error move terlewat jika terjadi
+      debugPrint('Gagal memindahkan peta: $e');
+    }
   }
 
   // FUNGSI BARU: Menangani Tap di Peta untuk menangkap koordinat
@@ -154,12 +216,12 @@ class _MapScreenState extends State<MapScreen> {
 
   // FUNGSI UNTUK MEMBANGUN KONTEN DETAIL
   Widget _buildDetailContent(
-    RestoPlaceModel place,
-    ScrollController scrollController,
-  ) {
+      RestoPlaceModel place,
+      ScrollController scrollController,
+      ) {
     // ⭐️ Penanganan List<ImageInfo> nullable
     final List<String> imageUrls =
-        place.images != null && place.images!.isNotEmpty
+    place.images != null && place.images!.isNotEmpty
         ? place.images!.map((img) => img.imageUrl).toList()
         : [];
 
@@ -191,7 +253,7 @@ class _MapScreenState extends State<MapScreen> {
               children: [
                 // 1. Image Slider (PageView)
                 if (imageUrls.isNotEmpty)
-                  Container(
+                  SizedBox(
                     height: screenHeight * 0.35,
                     width: double.infinity,
                     child: PageView.builder(
@@ -206,13 +268,13 @@ class _MapScreenState extends State<MapScreen> {
                               fit: BoxFit.cover,
                               loadingBuilder:
                                   (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        color: colorScheme.primary,
-                                      ),
-                                    );
-                                  },
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    color: colorScheme.primary,
+                                  ),
+                                );
+                              },
                               errorBuilder: (context, error, stackTrace) {
                                 return Center(
                                   child: Icon(
@@ -286,7 +348,7 @@ class _MapScreenState extends State<MapScreen> {
                               icon: Icons.schedule,
                               title: "Jam Operasi",
                               subtitle:
-                                  "${place.openHours} - ${place.closeHours}",
+                              "${place.openHours} - ${place.closeHours}",
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -330,64 +392,72 @@ class _MapScreenState extends State<MapScreen> {
 
                       // Tombol Aksi (Edit)
                       Center(
-                        child: Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              FilledButton.icon(
-                                onPressed: () {
-                                  Navigator.pop(context); // Tutup bottom sheet
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: FilledButton.icon(
+                                  onPressed: () {
+                                    Navigator.pop(context); // Tutup bottom sheet
 
-                                  // NAVIGASI KE HALAMAN EDIT
-                                  Navigator.pushNamed(
-                                    context,
-                                    NavigationRoute.editFoodPlaceRoute.path,
-                                    arguments: place,
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.edit,
-                                  color: Colors.white,
-                                ),
-                                label: const Text(
-                                  'Edit Resto',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                style: FilledButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 12,
+                                    // NAVIGASI KE HALAMAN EDIT
+                                    Navigator.pushNamed(
+                                      context,
+                                      NavigationRoute.editFoodPlaceRoute.path,
+                                      arguments: place,
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.edit,
+                                    color: Colors.white,
                                   ),
-                                  backgroundColor:
-                                      JejakRasaColor.secondary.color,
+                                  label: const Text(
+                                    'Edit Resto',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  style: FilledButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 12,
+                                    ),
+                                    backgroundColor:
+                                    JejakRasaColor.secondary.color,
+                                  ),
                                 ),
                               ),
+                            ),
 
-                              FilledButton.icon(
-                                onPressed: () {
-                                  Navigator.pop(context);
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: FilledButton.icon(
+                                  onPressed: () {
+                                    Navigator.pop(context);
 
-                                  // NAVIGASI KE HALAMAN EDIT
-                                  _showDeleteConfirmation(context, place.id);
-                                },
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: Colors.white,
-                                ),
-                                label: const Text(
-                                  'Hapus Resto',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                style: FilledButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 12,
+                                    // NAVIGASI KE HALAMAN EDIT
+                                    _showDeleteConfirmation(context, place.id);
+                                  },
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.white,
                                   ),
-                                  backgroundColor: JejakRasaColor.error.color,
+                                  label: const Text(
+                                    'Hapus Resto',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  style: FilledButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 12,
+                                    ),
+                                    backgroundColor: JejakRasaColor.error.color,
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 40),
@@ -485,6 +555,7 @@ class _MapScreenState extends State<MapScreen> {
             context,
           ).textTheme.titleSmall!.copyWith(color: Colors.white),
         ),
+        backgroundColor: JejakRasaColor.secondary.color, // Tambahkan warna app bar
       ),
 
       // ⭐️ FLOATING ACTION BUTTON untuk mengaktifkan mode tap
@@ -505,14 +576,14 @@ class _MapScreenState extends State<MapScreen> {
             );
           }
         },
-        backgroundColor: fabColor,
+        backgroundColor: JejakRasaColor.secondary.color,
         tooltip: fabTooltip,
-        child: Icon(fabIcon, color: colorScheme.onPrimary),
+        child: Icon(fabIcon, color: JejakRasaColor.primary.color),
       ),
 
       body: Consumer<MapViewModel>(
         builder: (context, mapVM, child) {
-          if (mapVM.isLoading) {
+          if (mapVM.isLoading && _currentCenter == null) {
             return Center(
               child: CircularProgressIndicator(color: colorScheme.primary),
             );
@@ -524,7 +595,8 @@ class _MapScreenState extends State<MapScreen> {
             );
           }
 
-          final markers = mapVM.foodPlaces.map((place) {
+          // 2. Kumpulkan Marker Tempat Makan
+          final foodPlaceMarkers = mapVM.foodPlaces.map((place) {
             final LatLng point = LatLng(place.latitude, place.longitude);
 
             return Marker(
@@ -568,11 +640,39 @@ class _MapScreenState extends State<MapScreen> {
             );
           }).toList();
 
+          // ⭐️ PERBAIKAN 2: Tambahkan Marker Lokasi User saat ini
+          if (_currentCenter != null) {
+            final userMarker = Marker(
+              point: _currentCenter!,
+              width: 40,
+              height: 40,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: colorScheme.primary, // Latar belakang biru
+                  border: Border.all(color: Colors.white, width: 2), // Ring putih
+                ),
+                child: Center(
+                  // Ikon kecil di tengah lingkaran
+                  child: Icon(
+                    Icons.person_pin_circle,
+                    color: colorScheme.onPrimary, // Warna putih
+                    size: 20,
+                  ),
+                ),
+              ),
+            );
+            // Tambahkan marker user ke list marker (biasanya di depan agar terlihat)
+            foodPlaceMarkers.add(userMarker);
+          }
+
+
           return FlutterMap(
             mapController: _mapController, // Pasang controller
             options: MapOptions(
-              initialCenter: _initialCenter,
-              initialZoom: 13.0,
+              // ⭐️ PERBAIKAN 3: Gunakan _currentCenter jika sudah ada, jika tidak gunakan default
+              initialCenter: _currentCenter ?? _initialCenter,
+              initialZoom: 15.0, // Zoom yang lebih dekat ke lokasi user
               // ⭐️ PASANG LISTENER TAP DI SINI
               onTap: (tapPosition, latLng) => _handleMapTap(latLng),
             ),
@@ -582,7 +682,8 @@ class _MapScreenState extends State<MapScreen> {
                 subdomains: const ['a', 'b', 'c'],
                 userAgentPackageName: 'com.example.mobile_apps',
               ),
-              MarkerLayer(markers: markers),
+              // Gunakan list marker yang sudah mencakup marker user
+              MarkerLayer(markers: foodPlaceMarkers),
             ],
           );
         },
