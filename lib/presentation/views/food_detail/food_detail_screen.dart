@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:readmore/readmore.dart';
 import 'package:mobile_apps/presentation/static/food_place/food_place_list_by_food_id_result_state.dart';
 import 'package:mobile_apps/presentation/static/review/create_review_result_state.dart';
 import 'package:mobile_apps/presentation/static/review/review_result_state.dart';
@@ -25,6 +26,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
   bool isBahan = true;
   int activeIndex = 0;
   String? videoUrl;
+  int _tabIndex = 0;
 
   YoutubePlayerController? _ytController;
 
@@ -37,21 +39,10 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
-
-    if (!kIsWeb &&
-        (defaultTargetPlatform == TargetPlatform.android ||
-            defaultTargetPlatform == TargetPlatform.iOS)) {
-      final videoId = YoutubePlayerController.convertUrlToId(videoUrl!)!;
-      _ytController = YoutubePlayerController.fromVideoId(
-        videoId: videoId,
-        autoPlay: false,
-        params: const YoutubePlayerParams(showFullscreenButton: true),
-      );
-    }
   }
 
   Future<void> _loadData() async {
-  final idFood = ModalRoute.of(context)!.settings.arguments as int;
+    final idFood = ModalRoute.of(context)!.settings.arguments as int;
     final sharedProvider = context.read<SharedPreferencesProvider>();
     final foodDetailProvider = context.read<FoodDetailProvider>();
     final reviewProvider = context.read<ReviewProvider>();
@@ -112,9 +103,28 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
   }
 
   Widget _buildMainMedia(Size size) {
+    if (media.isEmpty) {
+      return Container(
+        width: size.width,
+        height: size.height * 0.3,
+        color: Colors.grey[200],
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final item = media[activeIndex];
     if (item["type"] == "video") {
-      final videoId = YoutubePlayerController.convertUrlToId(item["url"]!)!;
+      final videoId = YoutubePlayerController.convertUrlToId(item["url"] ?? "");
+      
+      if (videoId == null) {
+        return Container(
+          width: size.width,
+          height: size.height * 0.3,
+          color: Colors.grey[300],
+          child: const Icon(Icons.broken_image, size: 48, color: Colors.grey),
+        );
+      }
+
       if (_ytController != null) {
         return YoutubePlayer(controller: _ytController!);
       } else {
@@ -190,7 +200,9 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
     final size = MediaQuery.of(context).size;
     final foodState = context.watch<FoodDetailProvider>().resultState;
     final reviewState = context.watch<ReviewProvider>().resultState;
-    final foodPlaceState = context.watch<FoodPlaceListByFoodIdProvider>().resultState;
+    final foodPlaceState = context
+        .watch<FoodPlaceListByFoodIdProvider>()
+        .resultState;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -215,10 +227,11 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                   children: [
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF26599A),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
+                      decoration: const BoxDecoration(color: Color(0xFF26599A)),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -232,10 +245,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                           ),
                           GestureDetector(
                             onTap: () => Navigator.pop(context),
-                            child: const Icon(
-                              Icons.close,
-                              color: Colors.white,
-                            ),
+                            child: const Icon(Icons.close, color: Colors.white),
                           ),
                         ],
                       ),
@@ -259,6 +269,80 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                           itemBuilder: (context, index) {
                             final item = media[index];
                             final bool isActive = index == activeIndex;
+                            final String url = item["url"] ?? '';
+
+                            Widget errorIconWidget = Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.broken_image,
+                                  color: Colors.grey,
+                                  size: 40,
+                                ),
+                              ),
+                            );
+
+                            Widget loadingWidget = Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Center(
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            );
+
+                            Widget childWidget;
+
+                            if (item["type"] == "image") {
+                              childWidget = Image.network(
+                                url,
+                                fit: BoxFit.cover,
+                                width: 100,
+                                height: 100,
+                                loadingBuilder: (context, child, progress) {
+                                  if (progress == null) return child;
+                                  return loadingWidget;
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return errorIconWidget;
+                                },
+                              );
+                            } else {
+                              final videoId = YoutubePlayerController.convertUrlToId(url);
+
+                              if (videoId == null) {
+                                childWidget = errorIconWidget;
+                              } else {
+                                childWidget = Stack(
+                                  children: [
+                                    Positioned.fill(
+                                      child: Image.network(
+                                        "https://img.youtube.com/vi/$videoId/hqdefault.jpg",
+                                        fit: BoxFit.cover,
+                                        loadingBuilder: (context, child, progress) {
+                                          if (progress == null) return child;
+                                          return loadingWidget;
+                                        },
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return errorIconWidget;
+                                        },
+                                      ),
+                                    ),
+                                    const Center(
+                                      child: Icon(
+                                        Icons.play_circle_fill,
+                                        color: Colors.red,
+                                        size: 40,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }
+                            }
 
                             return GestureDetector(
                               onTap: () {
@@ -266,12 +350,12 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                   activeIndex = index;
                                   if (item["type"] == "video" &&
                                       _ytController != null) {
-                                    _ytController!.loadVideoById(
-                                      videoId:
-                                          YoutubePlayerController.convertUrlToId(
-                                            item["url"]!,
-                                          )!,
-                                    );
+                                    final videoId = YoutubePlayerController.convertUrlToId(url);
+                                    if (videoId != null) {
+                                      _ytController!.loadVideoById(
+                                        videoId: videoId,
+                                      );
+                                    }
                                   }
                                 });
                               },
@@ -286,36 +370,12 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                           width: 3,
                                         )
                                       : null,
-                                  image: item["type"] == "image"
-                                      ? DecorationImage(
-                                          image: NetworkImage(item["url"]!),
-                                          fit: BoxFit.cover,
-                                        )
-                                      : null,
                                   color: Colors.black12,
                                 ),
-                                child: item["type"] == "video"
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Stack(
-                                          children: [
-                                            Positioned.fill(
-                                              child: Image.network(
-                                                "https://img.youtube.com/vi/${YoutubePlayerController.convertUrlToId(item["url"]!)}/hqdefault.jpg",
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                            const Center(
-                                              child: Icon(
-                                                Icons.play_circle_fill,
-                                                color: Colors.red,
-                                                size: 40,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      )
-                                    : null,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: childWidget,
+                                ),
                               ),
                             );
                           },
@@ -351,47 +411,61 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                     // ),
                     const SizedBox(height: 12),
                     DefaultTabController(
-                      length: 3,
+                      length: 2,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const TabBar(
+                          TabBar(
+                            onTap: (index) {
+                              setState(() {
+                                _tabIndex = index;
+                              });
+                            },
                             dividerColor: Colors.transparent,
-                            labelStyle: TextStyle(
+                            labelStyle: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
-                            unselectedLabelStyle: TextStyle(
+                            unselectedLabelStyle: const TextStyle(
                               fontWeight: FontWeight.normal,
                               fontSize: 16,
                             ),
-                            labelColor: Color(0xFF26599A),
-                            indicatorColor: Color(0xFF26599A),
+                            labelColor: const Color(0xFF26599A),
+                            indicatorColor: const Color(0xFF26599A),
                             unselectedLabelColor: Colors.grey,
-                            tabs: [
+                            tabs: const [
                               Tab(text: "Deskripsi"),
                               Tab(text: "Sejarah"),
-                              // Tab(text: "Makna budaya"),
                             ],
                           ),
-                          SizedBox(
-                            height: 120,
-                            child: TabBarView(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Text(food.desc),
+                          IndexedStack(
+                            index: _tabIndex,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: ReadMoreText(
+                                  food.desc,
+                                  trimLines: 3,
+                                  colorClickableText: Colors.blue,
+                                  trimMode: TrimMode.Line,
+                                  trimCollapsedText: 'baca selengkapnya',
+                                  trimExpandedText: ' sembunyikan',
+                                  style: const TextStyle(fontSize: 14),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Text(food.history),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: ReadMoreText(
+                                  food.history,
+                                  trimLines: 3,
+                                  colorClickableText: Colors.blue,
+                                  trimMode: TrimMode.Line,
+                                  trimCollapsedText: 'baca selengkapnya',
+                                  trimExpandedText: ' sembunyikan',
+                                  style: const TextStyle(fontSize: 14),
                                 ),
-                                // Padding(
-                                //   padding: const EdgeInsets.all(16.0),
-                                //   child: Text("Konten Makna budaya"),
-                                // ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -462,41 +536,44 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                           children: [_buildStepItem(null, food.recipes)],
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              "Komentar",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Komentar",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF26599A),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF26599A),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              onPressed: () {
-                                _showAddCommentModal(context);
-                              },
-                              icon: const Icon(Icons.add_comment, color: Colors.white),
-                              label: const Text(
-                                "Tambah",
-                                style: TextStyle(color: Colors.white),
-                              ),
+                            onPressed: () {
+                              _showAddCommentModal(context);
+                            },
+                            icon: const Icon(
+                              Icons.add_comment,
+                              color: Colors.white,
                             ),
-                          ],
-                        ),
+                            label: const Text(
+                              "Tambah",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
+                    ),
+                    const SizedBox(height: 8),
 
-                      _buildCommentsSection(reviewState),
+                    _buildCommentsSection(reviewState),
 
                     const SizedBox(height: 20),
 
@@ -515,18 +592,23 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Builder(
                         builder: (context) {
-                          if (foodPlaceState is FoodPlaceListByFoodIdLoadingState) {
-                            return const Center(child: CircularProgressIndicator());
-                          } else if (foodPlaceState is FoodPlaceListByFoodIdErrorState) {
+                          if (foodPlaceState
+                              is FoodPlaceListByFoodIdLoadingState) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          } else if (foodPlaceState
+                              is FoodPlaceListByFoodIdErrorState) {
                             return const Center(
                               child: Text(
                                 "Belum ada tempat rekomendasi.",
                                 style: TextStyle(color: Colors.grey),
                               ),
                             );
-                          } else if (foodPlaceState is FoodPlaceListByFoodIdLoadedState) {
+                          } else if (foodPlaceState
+                              is FoodPlaceListByFoodIdLoadedState) {
                             final foodPlaces = foodPlaceState.data;
-                            
+
                             if (foodPlaces.isEmpty) {
                               return const Center(
                                 child: Text(
@@ -535,16 +617,18 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                 ),
                               );
                             }
-                            
+
                             return ListView.separated(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: foodPlaces.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 8),
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 8),
                               itemBuilder: (context, index) {
-
                                 final place = foodPlaces[index];
-                                final imageUrl = (place.images != null && place.images!.isNotEmpty)
+                                final imageUrl =
+                                    (place.images != null &&
+                                        place.images!.isNotEmpty)
                                     ? place.images!.first.imageUrl
                                     : null;
 
@@ -756,20 +840,20 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Tulis Komentar",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Tulis Komentar",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.black54),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.black54),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -782,11 +866,17 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                     fillColor: Colors.grey[100],
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.grey, width: 1),
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF26599A), width: 2),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF26599A),
+                        width: 2,
+                      ),
                     ),
                   ),
                 ),
@@ -807,20 +897,20 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             backgroundColor: Colors.red,
-                            content: Text("Komentar tidak boleh kosong")
+                            content: Text("Komentar tidak boleh kosong"),
                           ),
                         );
                         return;
                       }
-            
+
                       final success = await createReviewProvider.createReview({
                         "id_food": idFood,
                         "review_desc": comment,
                         "id_user": userId.toString(),
                       });
-            
+
                       if (!context.mounted) return;
-            
+
                       if (!success) {
                         final state = createReviewProvider.state;
                         String errorMessage = "Gagal mengirim komentar.";
@@ -829,25 +919,24 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                         }
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            backgroundColor: Colors.red, 
-                            content: Text(errorMessage)
+                            backgroundColor: Colors.red,
+                            content: Text(errorMessage),
                           ),
                         );
                         return;
                       }
 
                       await reviewProvider.fetchReviewByFoodId(idFood);
-            
+
                       if (!context.mounted) return;
 
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          backgroundColor: Colors.green, 
-                          content: Text("Komentar berhasil dikirim")
+                          backgroundColor: Colors.green,
+                          content: Text("Komentar berhasil dikirim"),
                         ),
                       );
-            
                     },
                     child: const Text(
                       "Kirim",
@@ -863,6 +952,4 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
       },
     );
   }
-
-
 }

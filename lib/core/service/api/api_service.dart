@@ -26,7 +26,7 @@ import '../../../data/models/main/resto/food_place_search_response.dart';
 import '../../../data/models/main/resto/resto_food_model.dart';
 
 class ApiService {
-  static const String _baseUrl = "http://192.168.100.7:4000/api";
+  static const String _baseUrl = "https://backend-production-81ae.up.railway.app/api";
 
   Future<RegisterResponseModel> registerUser(UserRegisterRequest user) async {
     final response = await http.post(
@@ -402,7 +402,7 @@ class ApiService {
     }
   }
 
-  Future<CreateFoodPlaceResponse> updateFoodPlace(
+  Future<RestoPlaceModel> updateFoodPlace(
       int id,
       CreateFoodPlaceRequest request,
       ) async {
@@ -468,7 +468,7 @@ class ApiService {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       // Response body berisi object food place yang sudah diupdate
-      return CreateFoodPlaceResponse.fromJson(jsonDecode(response.body));
+      return RestoPlaceModel.fromJson(jsonDecode(response.body));
     } else if (response.statusCode == 401 || response.statusCode == 403) {
       await _handleUnauthorized();
       throw Exception("Unauthorized - Redirecting to login");
@@ -479,6 +479,54 @@ class ApiService {
       throw Exception(
         "Failed to update food place. Status code: ${response.statusCode}",
       );
+    }
+  }
+
+  Future<List<String>> updateFoodPlaceImages(
+      int idFoodPlace,
+      List<File> newImages,
+      ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
+
+    if (accessToken == null) {
+      throw Exception("Access Token not found. Please login.");
+    }
+
+    final uri = Uri.parse("$_baseUrl/food-place/image");
+    final request = http.MultipartRequest('PUT', uri)
+      ..headers['Authorization'] = 'Bearer $accessToken'
+      ..fields['id_food_place'] = idFoodPlace.toString();
+
+    for (var image in newImages) {
+      final ext = image.path.split('.').last.toLowerCase();
+      final multipartFile = await http.MultipartFile.fromPath(
+        'images',
+        image.path,
+        contentType: MediaType('image', ext == 'png' ? 'png' : 'jpeg'),
+      );
+      request.files.add(multipartFile);
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      if (jsonData['urls'] != null) {
+        return List<String>.from(jsonData['urls']);
+      } else if (jsonData['data'] != null) {
+        // handle case: API returns { data: [ { image_url: "..." }, ... ] }
+        return (jsonData['data'] as List)
+            .map((e) => e['image_url'] as String)
+            .toList();
+      } else {
+        return [];
+      }
+    } else {
+      final errorBody = jsonDecode(response.body);
+      throw Exception(
+          "Gagal update gambar: ${errorBody['detail'] ?? 'Unknown error'}");
     }
   }
 

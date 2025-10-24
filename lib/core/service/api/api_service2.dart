@@ -19,7 +19,7 @@ import '../../../data/models/main/resto/food_place_search_response.dart';
 import '../../../data/models/main/resto/resto_food_model.dart';
 
 class ApiService {
-  static const String _baseUrl = "https://b35b33aa6402.ngrok-free.app/api";
+  static const String _baseUrl = "https://backend-production-81ae.up.railway.app/api";
 
   Future<RegisterResponseModel> registerUser(UserRegisterRequest user) async {
     final response = await http.post(
