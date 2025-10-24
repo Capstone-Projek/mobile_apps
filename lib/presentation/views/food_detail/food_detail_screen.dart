@@ -572,44 +572,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "Komentar",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
-                          ),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF26599A),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            onPressed: () {
-                              _showAddCommentModal(context);
-                            },
-                            icon: const Icon(
-                              Icons.add_comment,
-                              color: Colors.white,
-                            ),
-                            label: const Text(
-                              "Tambah",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
 
-                    _buildCommentsSection(reviewState),
                     _buildCommentsSection(reviewState),
 
                     const SizedBox(height: 20),
