@@ -170,7 +170,9 @@ class _AdminFoodListScreenState extends State<AdminFoodListScreen> {
                       Container(
                         color: Colors.black.withValues(alpha: 0.3),
                         child: Center(
-                          child: CircularProgressIndicator(color: JejakRasaColor.secondary.color),
+                          child: CircularProgressIndicator(
+                            color: JejakRasaColor.secondary.color,
+                          ),
                         ),
                       ),
                   ],
@@ -221,7 +223,7 @@ class _AdminFoodListScreenState extends State<AdminFoodListScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(6),
@@ -249,7 +251,6 @@ class _AdminFoodListScreenState extends State<AdminFoodListScreen> {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
                           Text(
                             food.desc,
                             style: Theme.of(context).textTheme.bodySmall!
@@ -257,7 +258,7 @@ class _AdminFoodListScreenState extends State<AdminFoodListScreen> {
                                   fontSize: 12,
                                   color: Colors.grey[600],
                                 ),
-                            maxLines: 2,
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
@@ -279,6 +280,8 @@ class _AdminFoodListScreenState extends State<AdminFoodListScreen> {
                                 fontWeight: FontWeight.w600,
                                 color: JejakRasaColor.secondary.color,
                               ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -296,8 +299,14 @@ class _AdminFoodListScreenState extends State<AdminFoodListScreen> {
                                   fontSize: 11,
                                   color: Colors.grey[600],
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(width: 12),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
                               Icon(
                                 Icons.access_time,
                                 size: 14,
@@ -310,6 +319,8 @@ class _AdminFoodListScreenState extends State<AdminFoodListScreen> {
                                   fontSize: 11,
                                   color: Colors.grey[600],
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
