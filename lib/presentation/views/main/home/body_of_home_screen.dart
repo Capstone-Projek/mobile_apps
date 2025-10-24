@@ -69,7 +69,7 @@ class _BodyOfHomeScreenState extends State<BodyOfHomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.food!.foodName ?? "-",
+                    item.food?.foodName ?? "-",
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: JejakRasaColor.primary.color,
                     ),

@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile_apps/data/models/auth/login/login_response_model.dart';
 import 'package:mobile_apps/data/models/auth/login/user_login_request.dart';
@@ -28,7 +27,7 @@ import '../../../data/models/main/resto/food_place_search_response.dart';
 import '../../../data/models/main/resto/resto_food_model.dart';
 
 class ApiService {
-  static const String _baseUrl = "https://backend-production-81ae.up.railway.app/api";
+  static const String _baseUrl = "https://5a1dee4d648f.ngrok-free.app/api";
 
   Future<RegisterResponseModel> registerUser(UserRegisterRequest user) async {
     final response = await http.post(
@@ -237,8 +236,6 @@ class ApiService {
       },
     );
 
-    debugPrint(response.body.toString());
-
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((e) => RestoPlaceModel.fromJson(e)).toList();
@@ -352,7 +349,7 @@ class ApiService {
     }
 
     final response = await http.delete(
-      Uri.parse("$_baseUrl/food-place/$id"),
+      Uri.parse("$_baseUrl/food-places/$id"),
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $accessToken",
@@ -402,17 +399,9 @@ class ApiService {
     final http.Response response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-<<<<<<< HEAD
-      // Response body berisi object food place yang sudah diupdate
-      return RestoPlaceModel.fromJson(jsonDecode(response.body));
-    } else if (response.statusCode == 401 || response.statusCode == 403) {
-      await _handleUnauthorized();
-      throw Exception("Unauthorized - Redirecting to login");
-=======
       final jsonData = jsonDecode(response.body);
       // karena response {"message": "...", "data": {...}}
       return RestoPlaceModel.fromJson(jsonData['data']);
->>>>>>> 24209ab7bc95ae3e9fd36a1fbf46bb704152024b
     } else {
       final errorBody = jsonDecode(response.body);
       throw Exception("Gagal update food place: ${errorBody['detail'] ?? 'Unknown error'}");
@@ -480,54 +469,6 @@ class ApiService {
 
     final uri = Uri.parse("$_baseUrl/food-place/image");
     final request = http.MultipartRequest('POST', uri)
-      ..headers['Authorization'] = 'Bearer $accessToken'
-      ..fields['id_food_place'] = idFoodPlace.toString();
-
-    for (var image in newImages) {
-      final ext = image.path.split('.').last.toLowerCase();
-      final multipartFile = await http.MultipartFile.fromPath(
-        'images',
-        image.path,
-        contentType: MediaType('image', ext == 'png' ? 'png' : 'jpeg'),
-      );
-      request.files.add(multipartFile);
-    }
-
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
-
-    if (response.statusCode == 200) {
-      final jsonData = jsonDecode(response.body);
-      if (jsonData['urls'] != null) {
-        return List<String>.from(jsonData['urls']);
-      } else if (jsonData['data'] != null) {
-        // handle case: API returns { data: [ { image_url: "..." }, ... ] }
-        return (jsonData['data'] as List)
-            .map((e) => e['image_url'] as String)
-            .toList();
-      } else {
-        return [];
-      }
-    } else {
-      final errorBody = jsonDecode(response.body);
-      throw Exception(
-          "Gagal update gambar: ${errorBody['detail'] ?? 'Unknown error'}");
-    }
-  }
-
-  Future<List<String>> updateFoodPlaceImages(
-      int idFoodPlace,
-      List<File> newImages,
-      ) async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
-
-    if (accessToken == null) {
-      throw Exception("Access Token not found. Please login.");
-    }
-
-    final uri = Uri.parse("$_baseUrl/food-place/image");
-    final request = http.MultipartRequest('PUT', uri)
       ..headers['Authorization'] = 'Bearer $accessToken'
       ..fields['id_food_place'] = idFoodPlace.toString();
 

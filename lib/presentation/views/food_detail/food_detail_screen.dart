@@ -572,7 +572,44 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Komentar",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF26599A),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed: () {
+                              _showAddCommentModal(context);
+                            },
+                            icon: const Icon(
+                              Icons.add_comment,
+                              color: Colors.white,
+                            ),
+                            label: const Text(
+                              "Tambah",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
 
+                    _buildCommentsSection(reviewState),
                     _buildCommentsSection(reviewState),
 
                     const SizedBox(height: 20),
@@ -609,6 +646,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                               is FoodPlaceListByFoodIdLoadedState) {
                             final foodPlaces = foodPlaceState.data;
 
+
                             if (foodPlaces.isEmpty) {
                               return const Center(
                                 child: Text(
@@ -617,6 +655,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                                 ),
                               );
                             }
+
 
                             return ListView.separated(
                               shrinkWrap: true,
@@ -903,13 +942,16 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                         return;
                       }
 
+
                       final success = await createReviewProvider.createReview({
                         "id_food": idFood,
                         "review_desc": comment,
                         "id_user": userId.toString(),
                       });
 
+
                       if (!context.mounted) return;
+
 
                       if (!success) {
                         final state = createReviewProvider.state;
@@ -927,6 +969,7 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                       }
 
                       await reviewProvider.fetchReviewByFoodId(idFood);
+
 
                       if (!context.mounted) return;
 
