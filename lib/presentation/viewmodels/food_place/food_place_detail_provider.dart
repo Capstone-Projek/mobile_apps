@@ -24,4 +24,9 @@ class FoodPlaceDetailProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  void setError(String errorMessage) {
+    _resultState = FoodPlaceDetailErrorState(error: errorMessage);
+    notifyListeners();
+  }
 }

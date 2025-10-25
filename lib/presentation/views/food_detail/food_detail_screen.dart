@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:readmore/readmore.dart';
 import 'package:mobile_apps/presentation/static/food_place/food_place_list_by_food_id_result_state.dart';

@@ -39,7 +39,6 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
   LatLngBounds? _visibleBounds;
   int? activeIndex;
   int? _lastTappedIndex;
-  bool _hasFittedCamera = false;
   double _mapZoom = 13.0;
   List<Place> places = [];
 
@@ -73,11 +72,11 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
         address: item.address,
         price: item.priceRange,
         image: (item.images != null && item.images!.isNotEmpty)
-          ? item.images![0].imageUrl
-          : null,
+            ? item.images![0].imageUrl
+            : null,
         location: LatLng(
-          double.tryParse(item.latitude.toString()) ?? 0.0,
-          double.tryParse(item.longitude.toString()) ?? 0.0,
+          double.tryParse(item.latitude?.toString() ?? '') ?? 0.0,
+          double.tryParse(item.longitude?.toString() ?? '') ?? 0.0,
         ),
       );
     }).toList();
@@ -131,7 +130,7 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
       appBar: AppBar(
         title: const Center(
           child: Text(
-            "Map Screen",
+            "Peta Tempat Makan",
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
         ),
@@ -148,18 +147,24 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
           } else if (state is FoodPlaceListLoadedState) {
             places = _mapApiModelToPlace(state.data);
 
-            if (places.isNotEmpty && !_hasFittedCamera) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                final bounds = LatLngBounds.fromPoints(
-                  places
-                      .map((e) => e.location)
-                      .where((loc) => loc != null)
-                      .cast<LatLng>()
-                      .toList(),
-                );
-                _mapController.fitCamera(CameraFit.bounds(bounds: bounds));
-                _hasFittedCamera = true;
-              });
+            CameraFit? initialFit;
+            LatLng initialCenter = LatLng(-2.1317966927409384, 106.1165647711571);
+
+            final validLocations = places
+              .map((e) => e.location)
+              .where((loc) => loc != null)
+              .cast<LatLng>()
+              .toList();
+
+            if (validLocations.isNotEmpty) {
+              final bounds = LatLngBounds.fromPoints(validLocations);
+              
+              initialFit = CameraFit.bounds(
+                bounds: bounds,
+                padding: const EdgeInsets.all(40.0),
+              );
+              
+              initialCenter = bounds.center;
             }
 
             final visiblePlaces = _visibleBounds == null
@@ -174,7 +179,8 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                   child: FlutterMap(
                     mapController: _mapController,
                     options: MapOptions(
-                      initialCenter: LatLng(-6.9833, 110.4167),
+                      initialCenter: initialCenter,
+                      initialCameraFit: initialFit,
                       initialZoom: _mapZoom,
                       onMapEvent: (event) {
                         final bounds = _mapController.camera.visibleBounds;
@@ -190,8 +196,11 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                         userAgentPackageName: 'com.example.app',
                       ),
                       MarkerLayer(
-                        markers: List.generate(places.length, (index) {
-                          final place = places[index];
+                        markers: places.asMap().entries.where((entry) {
+                          return entry.value.location != null;
+                        }).map((entry) {
+                          final int index = entry.key;
+                          final Place place = entry.value;
                           final isActive = activeIndex == index;
                           final bool showLabel = _mapZoom >= 13;
 
@@ -205,37 +214,38 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   if (showLabel)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isActive
-                                          ? const Color(0xFF26599A)
-                                          : Colors.white,
-                                      borderRadius: BorderRadius.circular(6),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.2),
-                                          blurRadius: 3,
-                                          offset: const Offset(1, 1),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Text(
-                                      place.name!,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 8,
-                                        fontWeight: FontWeight.bold,
-                                        color: isActive
-                                            ? Colors.white
-                                            : Colors.black,
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
                                       ),
-                                      overflow: TextOverflow.ellipsis,
+                                      decoration: BoxDecoration(
+                                        color: isActive
+                                            ? const Color(0xFF26599A)
+                                            : Colors.white,
+                                        borderRadius: BorderRadius.circular(6),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.2),
+                                            blurRadius: 3,
+                                            offset: const Offset(1, 1),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Text(
+                                        // GANTI INI
+                                        place.name ?? '-',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.bold,
+                                          color: isActive
+                                              ? Colors.white
+                                              : Colors.black,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                  ),
                                   const SizedBox(height: 4),
                                   Icon(
                                     Icons.location_on,
@@ -248,7 +258,7 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                               ),
                             ),
                           );
-                        }),
+                        }).toList(),
                       ),
                     ],
                   ),
@@ -259,155 +269,155 @@ class _FoodPlaceScreenState extends State<FoodPlaceScreen> {
                   decoration: const BoxDecoration(
                     color: Color(0xFFF3F3F3),
                     borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(16),
+                      top: Radius.circular(20),
                     ),
                   ),
                   child: visiblePlaces.isEmpty
-                      ? const Center(child: Text("Tidak ada data"))
+                      ? const Center(child: Text("Tidak ada data terlihat di peta"))
                       : ListView.builder(
-                          controller: _scrollController,
-                          itemCount: visiblePlaces.length,
-                          itemBuilder: (context, index) {
-                            final place = visiblePlaces[index];
-                            final isActive =
-                                activeIndex != null &&
-                                places[activeIndex!].name == place.name;
+                            controller: _scrollController,
+                            itemCount: visiblePlaces.length,
+                            itemBuilder: (context, index) {
+                              final place = visiblePlaces[index];
+                              final isActive =
+                                  activeIndex != null &&
+                                  places[activeIndex!].name == place.name;
 
-                            return GestureDetector(
-                              onTap: () {
-                                final originalIndex = places.indexWhere(
-                                  (p) => p.name == place.name,
-                                );
-                                if (_lastTappedIndex == originalIndex) {
-                                  Navigator.pushNamed(
-                                    context,
-                                    '/food-place-detail',
-                                    arguments: place.id,
+                              return GestureDetector(
+                                onTap: () {
+                                  final originalIndex = places.indexWhere(
+                                    (p) => p.name == place.name,
                                   );
-                                } else {
-                                  _onMarkerTap(originalIndex);
-                                  _lastTappedIndex = originalIndex;
-                                }
-                              },
-                              child: Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                decoration: BoxDecoration(
-                                  color: isActive
-                                      ? const Color(0xFF26599A)
-                                      : Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
+                                  if (_lastTappedIndex == originalIndex) {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/food-place-detail',
+                                      arguments: place.id,
+                                    );
+                                  } else {
+                                    _onMarkerTap(originalIndex);
+                                    _lastTappedIndex = originalIndex;
+                                  }
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  decoration: BoxDecoration(
                                     color: isActive
                                         ? const Color(0xFF26599A)
-                                        : Colors.grey.shade300,
-                                    width: 2,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(12),
-                                        bottomLeft: Radius.circular(12),
-                                      ),
-                                      child: Image.network(
-                                        place.image!,
-                                        width: 100,
-                                        height: 100,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                              return Container(
-                                                width: 100,
-                                                height: 100,
-                                                color: Colors.grey[300],
-                                                child: const Icon(
-                                                  Icons.image_not_supported,
-                                                  size: 40,
-                                                  color: Colors.grey,
-                                                ),
-                                              );
-                                            },
-                                      ),
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isActive
+                                          ? const Color(0xFF26599A)
+                                          : Colors.grey.shade300,
+                                      width: 2,
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 12,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(12),
+                                          bottomLeft: Radius.circular(12),
                                         ),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              place.name!,
-                                              style: TextStyle(
-                                                color: isActive
-                                                    ? Colors.white
-                                                    : Colors.black,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
+                                        child: Image.network(
+                                          place.image ?? '',
+                                          width: 100,
+                                          height: 100,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                            (context, error, stackTrace) {
+                                            return Container(
+                                              width: 100,
+                                              height: 100,
+                                              color: Colors.grey[300],
+                                              child: const Icon(
+                                                Icons.image_not_supported,
+                                                size: 40,
+                                                color: Colors.grey,
                                               ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Row(
-                                              children: [
-                                                Icon(
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 12,
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                place.name ?? '-',
+                                                style: TextStyle(
+                                                  color: isActive
+                                                      ? Colors.white
+                                                      : Colors.black,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  Icon(
                                                   Icons.location_on,
                                                   color: isActive
                                                       ? Colors.white
                                                       : Colors.grey,
                                                   size: 16,
                                                 ),
-                                                const SizedBox(width: 4),
-                                                Expanded(
-                                                  child: Text(
-                                                    place.address!,
-                                                    style: TextStyle(
-                                                      color: isActive
-                                                          ? Colors.white
-                                                          : Colors.black,
-                                                      fontSize: 14,
+                                                  const SizedBox(width: 4),
+                                                  Expanded(
+                                                    child: Text(
+                                                      place.address ?? '-',
+                                                      style: TextStyle(
+                                                        color: isActive
+                                                            ? Colors.white
+                                                            : Colors.black,
+                                                        fontSize: 14,
+                                                      ),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                     ),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Row(
-                                              children: [
-                                                Icon(
+                                                ],
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  Icon(
                                                   Icons.local_offer,
                                                   color: isActive
                                                       ? Colors.white
                                                       : Colors.grey,
                                                   size: 16,
                                                 ),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  "IDR ${place.price}",
-                                                  style: TextStyle(
-                                                    color: isActive
-                                                        ? Colors.white
-                                                        : Colors.black,
-                                                    fontSize: 14,
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    "IDR ${place.price ?? '-'}",
+                                                    style: TextStyle(
+                                                      color: isActive
+                                                          ? Colors.white
+                                                          : Colors.black,
+                                                      fontSize: 14,
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
+                              );
+                            },
+                          ),
                 ),
               ],
             );

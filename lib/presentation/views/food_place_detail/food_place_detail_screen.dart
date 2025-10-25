@@ -25,7 +25,17 @@ class _FoodPlaceDetailScreenState extends State<FoodPlaceDetailScreen> {
   }
 
   Future<void> _loadData() async {
-    final id = ModalRoute.of(context)!.settings.arguments as int;
+    if (!mounted) return;
+
+    final Object? args = ModalRoute.of(context)?.settings.arguments;
+
+    if (args == null || args is! int) {
+      context.read<FoodPlaceDetailProvider>().setError("ID tempat makan tidak valid");
+      return;
+    }
+
+    final int id = args;
+
     final sharedProvider = context.read<SharedPreferencesProvider>();
     final foodPlaceDetailProvider = context.read<FoodPlaceDetailProvider>();
     final foodDetailProvider = context.read<FoodDetailProvider>();
@@ -258,7 +268,7 @@ class _FoodPlaceDetailScreenState extends State<FoodPlaceDetailScreen> {
                                         children: [
                                           Expanded(
                                             flex: 3,
-                                            child: item.images.isNotEmpty
+                                            child: item.images.isNotEmpty == true
                                                 ? ClipRRect(
                                                     borderRadius: BorderRadius.circular(8),
                                                     child: Image.network(
