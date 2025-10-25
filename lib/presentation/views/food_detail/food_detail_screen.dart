@@ -14,6 +14,7 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:mobile_apps/presentation/viewmodels/auth/user/shared_preferences_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/food_detail_provider.dart';
 import 'package:mobile_apps/presentation/static/food/food_detail_result_state.dart';
+import 'place_card.dart';
 
 class FoodDetailScreen extends StatefulWidget {
   const FoodDetailScreen({super.key});
