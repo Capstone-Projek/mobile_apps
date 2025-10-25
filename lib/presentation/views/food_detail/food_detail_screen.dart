@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_apps/presentation/views/food_detail/comment_section.dart';
+import 'package:mobile_apps/presentation/views/food_detail/info_section.dart';
+import 'package:mobile_apps/presentation/views/food_detail/ingredient_item.dart';
+import 'package:mobile_apps/presentation/views/food_detail/step_item.dart';
 import 'package:readmore/readmore.dart';
 import 'package:mobile_apps/presentation/static/food_place/food_place_list_by_food_id_result_state.dart';
 import 'package:mobile_apps/presentation/static/review/create_review_result_state.dart';
@@ -397,7 +401,6 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                               ),
                             ),
                           ),
-                          const Icon(Icons.bookmark_border),
                         ],
                       ),
                     ),
@@ -469,7 +472,17 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                         ],
                       ),
                     ),
+              
                     const SizedBox(height: 12),
+
+                    InfoSection(
+                      category: food.category,
+                      timeCook: food.timeCook,
+                      serving: food.serving,
+                    ),
+
+                    const SizedBox(height: 14),
+                    
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
@@ -525,14 +538,14 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Column(
-                          children: [_buildIngredientItem(food.material, null)],
+                          children: [IngredientItem(name: food.material, qty: null)],
                         ),
                       )
                     else
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Column(
-                          children: [_buildStepItem(null, food.recipes)],
+                          children: [StepItem(number: null, step: food.recipes)],
                         ),
                       ),
                     const SizedBox(height: 20),
@@ -572,8 +585,8 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                     ),
                     const SizedBox(height: 8),
 
-                    _buildCommentsSection(reviewState),
-
+                    CommentSection(reviewState: reviewState),
+                    
                     const SizedBox(height: 20),
 
                     const Padding(
@@ -675,139 +688,6 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
         ),
       ),
     );
-  }
-
-  static Widget _buildIngredientItem(String name, String? qty) {
-    if (qty == null) {
-      return Container(
-        constraints: const BoxConstraints(minHeight: 80),
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            const SizedBox(width: 12),
-            Expanded(child: Text(name)),
-          ],
-        ),
-      );
-    } else {
-      return Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            const SizedBox(width: 12),
-            Expanded(child: Text(name)),
-            Text(qty, style: const TextStyle(fontWeight: FontWeight.bold)),
-          ],
-        ),
-      );
-    }
-  }
-
-  static Widget _buildStepItem(String? number, String step) {
-    if (number == null) {
-      return Container(
-        constraints: const BoxConstraints(minHeight: 80),
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            const SizedBox(width: 12),
-            Expanded(child: Text(step)),
-          ],
-        ),
-      );
-    } else {
-      return Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                number,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(child: Text(step)),
-          ],
-        ),
-      );
-    }
-  }
-
-  Widget _buildCommentsSection(ReviewResultState reviewState) {
-    if (reviewState is ReviewLoadingState) {
-      return const Center(child: CircularProgressIndicator());
-    } else if (reviewState is ReviewErrorState) {
-      return const Center(
-        child: Text(
-          "Belum ada komentar.",
-          style: TextStyle(color: Colors.grey),
-        ),
-      );
-    } else if (reviewState is ReviewLoadedState) {
-      final reviews = reviewState.data;
-
-      if (reviews.isEmpty) {
-        return const Center(
-          child: Text(
-            "Belum ada komentar.",
-            style: TextStyle(color: Colors.grey),
-          ),
-        );
-      }
-
-      return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: reviews.map((review) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: CommentCard(
-                name: review.user.name,
-                comment: review.reviewDesc,
-              ),
-            );
-          }).toList(),
-        ),
-      );
-    }
-
-    return const SizedBox.shrink();
   }
 
   void _showAddCommentModal(BuildContext context) {
