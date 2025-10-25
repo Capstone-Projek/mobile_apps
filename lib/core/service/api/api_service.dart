@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +9,7 @@ import 'package:mobile_apps/data/models/auth/login/user_login_request.dart';
 import 'package:mobile_apps/data/models/auth/register/register_response_model.dart';
 import 'package:mobile_apps/data/models/auth/register/user_register_request.dart';
 import 'package:mobile_apps/data/models/food_place/food_place_detail_response_model.dart';
+import 'package:mobile_apps/data/models/main/camera/upload_response.dart';
 import 'package:mobile_apps/data/models/main/food/edit_food_response.dart';
 import 'package:mobile_apps/data/models/main/food/food_model.dart';
 import 'package:mobile_apps/data/models/main/home/food_list_response_models.dart';
@@ -28,7 +30,8 @@ import '../../../data/models/main/resto/food_place_search_response.dart';
 import '../../../data/models/main/resto/resto_food_model.dart';
 
 class ApiService {
-  static const String _baseUrl = "https://backend-production-81ae.up.railway.app/api";
+  static const String _baseUrl =
+      "https://backend-production-81ae.up.railway.app/api";
 
   Future<RegisterResponseModel> registerUser(UserRegisterRequest user) async {
     final response = await http.post(
@@ -75,8 +78,8 @@ class ApiService {
   }
 
   Future<List<FoodListResponseModel>> getFoodList(
-      final String accessToken,
-      ) async {
+    final String accessToken,
+  ) async {
     final response = await http.get(
       Uri.parse("$_baseUrl/food"),
       headers: {
@@ -98,8 +101,8 @@ class ApiService {
   }
 
   Future<List<RestoListResponseModels>> getRestoList(
-      final String accessToken,
-      ) async {
+    final String accessToken,
+  ) async {
     final response = await http.get(
       Uri.parse("$_baseUrl/food-place"),
       headers: {
@@ -121,9 +124,9 @@ class ApiService {
   }
 
   Future<FoodListResponseModel> getSearcFood(
-      final String accessToken,
-      final String searchFood,
-      ) async {
+    final String accessToken,
+    final String searchFood,
+  ) async {
     try {
       final response = await http.get(
         Uri.parse("$_baseUrl/food/search?name=$searchFood"),
@@ -149,10 +152,77 @@ class ApiService {
     }
   }
 
+    Future<FoodListResponseModel> searchScanFood(
+    final String accessToken,
+    final String searchFood,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse("$_baseUrl/food/search?name=$searchFood"),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print(response.statusCode);
+      print(response.body);
+      if (response.statusCode == 200) {
+        return FoodListResponseModel.fromJson(jsonDecode(response.body));
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        await _handleUnauthorized();
+        throw Exception("Unauthorized - Redirecting to login");
+      } else {
+        throw Exception("Failed to search food list");
+      }
+    } catch (e) {
+      print(e);
+      throw Exception("Gagal menampilkan");
+    }
+  }
+
+  Future<UploadResponse> uploadDocument(
+    Uint8List bytes,
+    String fileName,
+  ) async {
+    try {
+      const String url = "https://86ca99b84ec6.ngrok-free.app/api/classify/";
+
+      final uri = Uri.parse(url);
+      final request = http.MultipartRequest('POST', uri);
+
+      final http.MultipartFile multiPartFile = http.MultipartFile.fromBytes(
+        "image",
+        bytes,
+        filename: fileName,
+      );
+
+      final Map<String, String> headers = {
+        "Content-type": "multipart/form-data",
+      };
+
+      request.files.add(multiPartFile);
+      request.headers.addAll(headers);
+
+      final http.StreamedResponse streamedResponse = await request.send();
+      final int statusCode = streamedResponse.statusCode;
+      final Uint8List responseList = await streamedResponse.stream.toBytes();
+      final String responseData = String.fromCharCodes(responseList);
+
+      if (statusCode == 200 || statusCode == 201 || statusCode == 413) {
+        return UploadResponse.fromJson(jsonDecode(responseData));
+      } else {
+        throw Exception("Failed to fetch data");
+      }
+    } catch (e) {
+      throw Exception("Caught an error: $e");
+    }
+  }
+
   Future<ChangeProfileResponseModel> changeProfile(
-      String name,
-      String email,
-      ) async {
+    String name,
+    String email,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
 
@@ -288,8 +358,8 @@ class ApiService {
   }
 
   Future<RestoPlaceModel> createFoodPlace(
-      CreateFoodPlaceRequest request,
-      ) async {
+    CreateFoodPlaceRequest request,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
 
@@ -302,44 +372,60 @@ class ApiService {
     final uri = Uri.parse("$_baseUrl/food-place");
     final requestBody = http.MultipartRequest('POST', uri)
       ..headers['Authorization'] = 'Bearer $accessToken'
-    // --- Data Fields ---
+      // --- Data Fields ---
       ..fields['shop_name'] = request.shopName
       ..fields['latitude'] = request.latitude.toString()
       ..fields['longitude'] = request.longitude.toString();
 
     // Tambahkan field opsional
-    if (request.foodId != null) requestBody.fields['food_id'] = request.foodId.toString();
-    if (request.address != null) requestBody.fields['address'] = request.address!;
+    if (request.foodId != null)
+      requestBody.fields['food_id'] = request.foodId.toString();
+    if (request.address != null)
+      requestBody.fields['address'] = request.address!;
     if (request.phone != null) requestBody.fields['phone'] = request.phone!;
-    if (request.openHours != null) requestBody.fields['open_hours'] = request.openHours!;
-    if (request.closeHours != null) requestBody.fields['close_hours'] = request.closeHours!;
-    if (request.priceRange != null) requestBody.fields['price_range'] = request.priceRange!;
-    if (request.foodName != null) requestBody.fields['food_name'] = request.foodName!;
+    if (request.openHours != null)
+      requestBody.fields['open_hours'] = request.openHours!;
+    if (request.closeHours != null)
+      requestBody.fields['close_hours'] = request.closeHours!;
+    if (request.priceRange != null)
+      requestBody.fields['price_range'] = request.priceRange!;
+    if (request.foodName != null)
+      requestBody.fields['food_name'] = request.foodName!;
 
     // --- File Fields ---
     if (request.images != null && request.images!.isNotEmpty) {
       for (var file in request.images!) {
         final mimeType = file.path.split('.').last.toLowerCase();
-        final http.MultipartFile multipartFile = await http.MultipartFile.fromPath(
-          'images', // Nama field sesuai BE
-          file.path,
-          contentType: MediaType('image', mimeType == 'png' ? 'png' : 'jpeg'),
-        );
+        final http.MultipartFile multipartFile =
+            await http.MultipartFile.fromPath(
+              'images', // Nama field sesuai BE
+              file.path,
+              contentType: MediaType(
+                'image',
+                mimeType == 'png' ? 'png' : 'jpeg',
+              ),
+            );
         requestBody.files.add(multipartFile);
       }
     }
 
     final http.StreamedResponse streamedResponse = await requestBody.send();
-    final http.Response response = await http.Response.fromStream(streamedResponse);
+    final http.Response response = await http.Response.fromStream(
+      streamedResponse,
+    );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       // BE mengembalikan RestoPlaceModel yang sudah berisi array images terlampir.
       // Kita harus memanggil RestoPlaceModel.fromJson langsung.
       return RestoPlaceModel.fromJson(jsonDecode(response.body));
     } else {
-      print("Failed to create food place. Status: ${response.statusCode}, Body: ${response.body}");
+      print(
+        "Failed to create food place. Status: ${response.statusCode}, Body: ${response.body}",
+      );
       final errorBody = jsonDecode(response.body);
-      throw Exception("Gagal membuat tempat makan: ${errorBody['detail'] ?? errorBody['error']}");
+      throw Exception(
+        "Gagal membuat tempat makan: ${errorBody['detail'] ?? errorBody['error']}",
+      );
     }
   }
 
@@ -365,15 +451,19 @@ class ApiService {
       return body['message'] ?? "Food place deleted successfully";
     } else {
       // Log atau cek body response untuk detail error dari server
-      print("Failed to delete food place. Status: ${response.statusCode}, Body: ${response.body}");
-      throw Exception("Failed to delete food place. Status code: ${response.statusCode}");
+      print(
+        "Failed to delete food place. Status: ${response.statusCode}, Body: ${response.body}",
+      );
+      throw Exception(
+        "Failed to delete food place. Status code: ${response.statusCode}",
+      );
     }
   }
 
   Future<RestoPlaceModel> updateFoodPlace(
-      int id,
-      CreateFoodPlaceRequest request,
-      ) async {
+    int id,
+    CreateFoodPlaceRequest request,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
 
@@ -390,16 +480,24 @@ class ApiService {
       ..fields['longitude'] = request.longitude.toString();
 
     // optional fields
-    if (request.foodId != null) requestBody.fields['food_id'] = request.foodId.toString();
-    if (request.address != null) requestBody.fields['address'] = request.address!;
+    if (request.foodId != null)
+      requestBody.fields['food_id'] = request.foodId.toString();
+    if (request.address != null)
+      requestBody.fields['address'] = request.address!;
     if (request.phone != null) requestBody.fields['phone'] = request.phone!;
-    if (request.openHours != null) requestBody.fields['open_hours'] = request.openHours!;
-    if (request.closeHours != null) requestBody.fields['close_hours'] = request.closeHours!;
-    if (request.priceRange != null) requestBody.fields['price_range'] = request.priceRange!;
-    if (request.foodName != null) requestBody.fields['food_name'] = request.foodName!;
+    if (request.openHours != null)
+      requestBody.fields['open_hours'] = request.openHours!;
+    if (request.closeHours != null)
+      requestBody.fields['close_hours'] = request.closeHours!;
+    if (request.priceRange != null)
+      requestBody.fields['price_range'] = request.priceRange!;
+    if (request.foodName != null)
+      requestBody.fields['food_name'] = request.foodName!;
 
     final http.StreamedResponse streamedResponse = await requestBody.send();
-    final http.Response response = await http.Response.fromStream(streamedResponse);
+    final http.Response response = await http.Response.fromStream(
+      streamedResponse,
+    );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final jsonData = jsonDecode(response.body);
@@ -407,14 +505,16 @@ class ApiService {
       return RestoPlaceModel.fromJson(jsonData['data']);
     } else {
       final errorBody = jsonDecode(response.body);
-      throw Exception("Gagal update food place: ${errorBody['detail'] ?? 'Unknown error'}");
+      throw Exception(
+        "Gagal update food place: ${errorBody['detail'] ?? 'Unknown error'}",
+      );
     }
   }
 
   Future<List<String>> updateFoodPlaceImages(
-      int idFoodPlace,
-      List<File> newImages,
-      ) async {
+    int idFoodPlace,
+    List<File> newImages,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
 
@@ -455,14 +555,15 @@ class ApiService {
     } else {
       final errorBody = jsonDecode(response.body);
       throw Exception(
-          "Gagal update gambar: ${errorBody['detail'] ?? 'Unknown error'}");
+        "Gagal update gambar: ${errorBody['detail'] ?? 'Unknown error'}",
+      );
     }
   }
 
   Future<List<String>> insertFoodPlaceImages(
-      int idFoodPlace,
-      List<File> newImages,
-      ) async {
+    int idFoodPlace,
+    List<File> newImages,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
 
@@ -503,7 +604,8 @@ class ApiService {
     } else {
       final errorBody = jsonDecode(response.body);
       throw Exception(
-          "Gagal update gambar: ${errorBody['detail'] ?? 'Unknown error'}");
+        "Gagal update gambar: ${errorBody['detail'] ?? 'Unknown error'}",
+      );
     }
   }
 
@@ -678,8 +780,8 @@ class ApiService {
   }
 
   Future<List<FoodPlaceListResponseModel>> getAllFoodPlace(
-      final String accessToken,
-      ) async {
+    final String accessToken,
+  ) async {
     final response = await http.get(
       Uri.parse("$_baseUrl/food-place"),
       headers: {
@@ -701,7 +803,7 @@ class ApiService {
   ) async {
     final prefs = await SharedPreferences.getInstance();
     final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
-    
+
     final response = await http.get(
       Uri.parse("$_baseUrl/get-food-place/food/$foodId"),
       headers: {
@@ -718,7 +820,7 @@ class ApiService {
     }
   }
 
-    Future<FoodPlaceDetailResponseModel> getFoodPlaceDetailById(int id) async {
+  Future<FoodPlaceDetailResponseModel> getFoodPlaceDetailById(int id) async {
     final prefs = await SharedPreferences.getInstance();
     final String? accessToken = prefs.getString('MY_ACCESS_TOKEN');
 
@@ -740,7 +842,6 @@ class ApiService {
       throw Exception("Failed to get food place with id: $id");
     }
   }
-
 
   Future<FoodModel> getFoodById(int id) async {
     final prefs = await SharedPreferences.getInstance();
@@ -833,7 +934,7 @@ class ApiService {
 
     navigatorKey.currentState?.pushNamedAndRemoveUntil(
       NavigationRoute.loginRoute.path,
-          (route) => false,
+      (route) => false,
     );
   }
 }

@@ -93,7 +93,9 @@ void main() async {
         ChangeNotifierProvider(create: (context) => SettingStateProvider()),
 
         ChangeNotifierProvider(create: (context) => IndexNavProvider()),
-        ChangeNotifierProvider(create: (context) => CameraProvider()),
+        ChangeNotifierProvider(
+          create: (context) => CameraProvider(context.read<ApiService>()),
+        ),
         ChangeNotifierProvider(
           create: (context) =>
               ChangeProfileProvider(context.read<ApiService>()),

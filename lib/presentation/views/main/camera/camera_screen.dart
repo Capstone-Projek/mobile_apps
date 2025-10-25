@@ -1,17 +1,42 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:mobile_apps/data/models/main/camera/upload_response.dart';
+import 'package:mobile_apps/presentation/styles/color/jejak_rasa_color.dart';
+import 'package:mobile_apps/presentation/viewmodels/auth/user/shared_preferences_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/main/camera/camera_provider.dart';
 import 'package:provider/provider.dart';
 
-class CameraScreen extends StatelessWidget {
+class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
 
   @override
+  State<CameraScreen> createState() => _CameraScreenState();
+}
+
+class _CameraScreenState extends State<CameraScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    final cameraProvider = context.read<CameraProvider>();
+
+    cameraProvider.addListener(() {
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      final message = cameraProvider.message;
+
+      if (message != null) {
+        scaffoldMessenger.showSnackBar(SnackBar(content: Text(message)));
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final sharedProvider = context.read<SharedPreferencesProvider>();
     return Scaffold(
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             spacing: 4,
             children: [
@@ -32,6 +57,37 @@ class CameraScreen extends StatelessWidget {
                 spacing: 8,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Consumer<CameraProvider>(
+                    builder: (context, value, child) {
+                      final uploadResponse = value.uploadResponse;
+                      if (uploadResponse == null) {
+                        return SizedBox.shrink();
+                      }
+
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "${uploadResponse?.prediction} - ${uploadResponse?.confidence.toStringAsFixed(2)}%",
+                            style: Theme.of(context).textTheme.bodyMedium!
+                                .copyWith(color: JejakRasaColor.tersier.color),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed: () =>
+                                context.read<CameraProvider>().detailScreen(
+                                  context,
+                                  sharedProvider.accessToken!,
+                                  uploadResponse.prediction,
+                                ),
+                            child: Text("Detail food"),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+
                   Row(
                     spacing: 8,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -60,13 +116,16 @@ class CameraScreen extends StatelessWidget {
                     ],
                   ),
                   FilledButton.tonal(
-                    onPressed: () {
-                      final scaffoldMessenger = ScaffoldMessenger.of(context);
-                      scaffoldMessenger.showSnackBar(
-                        SnackBar(content: Text("Feature under development 🙏")),
-                      );
-                    },
-                    child: const Text("Analyze"),
+                    onPressed: () => context.read<CameraProvider>().upload(),
+                    child: Consumer<CameraProvider>(
+                      builder: (context, value, child) {
+                        if (value.isUploading) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+
+                        return const Text("Analyze");
+                      },
+                    ),
                   ),
                 ],
               ),
