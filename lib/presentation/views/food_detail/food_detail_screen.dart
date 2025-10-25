@@ -6,7 +6,6 @@ import 'package:mobile_apps/presentation/views/food_detail/step_item.dart';
 import 'package:readmore/readmore.dart';
 import 'package:mobile_apps/presentation/static/food_place/food_place_list_by_food_id_result_state.dart';
 import 'package:mobile_apps/presentation/static/review/create_review_result_state.dart';
-import 'package:mobile_apps/presentation/static/review/review_result_state.dart';
 import 'package:mobile_apps/presentation/viewmodels/food_place/food_place_list_by_food_id_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/review/create_review_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/review/review_by_food_provider.dart';
@@ -15,8 +14,6 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:mobile_apps/presentation/viewmodels/auth/user/shared_preferences_provider.dart';
 import 'package:mobile_apps/presentation/viewmodels/food/food_detail_provider.dart';
 import 'package:mobile_apps/presentation/static/food/food_detail_result_state.dart';
-import 'comment_card.dart';
-import 'place_card.dart';
 
 class FoodDetailScreen extends StatefulWidget {
   const FoodDetailScreen({super.key});
