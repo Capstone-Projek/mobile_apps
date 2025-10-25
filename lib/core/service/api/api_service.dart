@@ -152,34 +152,6 @@ class ApiService {
     }
   }
 
-    Future<FoodListResponseModel> searchScanFood(
-    final String accessToken,
-    final String searchFood,
-  ) async {
-    try {
-      final response = await http.get(
-        Uri.parse("$_baseUrl/food/search?name=$searchFood"),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      print(response.statusCode);
-      print(response.body);
-      if (response.statusCode == 200) {
-        return FoodListResponseModel.fromJson(jsonDecode(response.body));
-      } else if (response.statusCode == 401 || response.statusCode == 403) {
-        await _handleUnauthorized();
-        throw Exception("Unauthorized - Redirecting to login");
-      } else {
-        throw Exception("Failed to search food list");
-      }
-    } catch (e) {
-      print(e);
-      throw Exception("Gagal menampilkan");
-    }
-  }
 
   Future<UploadResponse> uploadDocument(
     Uint8List bytes,

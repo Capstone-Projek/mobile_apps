@@ -65,10 +65,12 @@ class CameraProvider extends ChangeNotifier {
     String accessToken,
     String foodName,
   ) async {
-    print(foodName);
-    final idFood = await _apiService.searchScanFood(accessToken, foodName);
+    // Ubah format huruf: kapital di awal, kecil sisanya
+    final formattedName = foodName.isNotEmpty
+        ? '${foodName[0].toUpperCase()}${foodName.substring(1).toLowerCase()}'
+        : '';
 
-    print(idFood);
+    final idFood = await _apiService.searchFood(formattedName);
 
     if (idFood.idFood != null) {
       print("✅ Data makanan ditemukan dengan id: ${idFood.idFood}");

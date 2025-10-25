@@ -25,7 +25,14 @@ class _CameraScreenState extends State<CameraScreen> {
       final message = cameraProvider.message;
 
       if (message != null) {
-        scaffoldMessenger.showSnackBar(SnackBar(content: Text(message)));
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              message,
+              style: TextStyle(color: JejakRasaColor.secondary.color),
+            ),
+          ),
+        );
       }
     });
   }
@@ -61,29 +68,83 @@ class _CameraScreenState extends State<CameraScreen> {
                     builder: (context, value, child) {
                       final uploadResponse = value.uploadResponse;
                       if (uploadResponse == null) {
-                        return SizedBox.shrink();
+                        return const SizedBox.shrink();
                       }
 
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "${uploadResponse?.prediction} - ${uploadResponse?.confidence.toStringAsFixed(2)}%",
-                            style: Theme.of(context).textTheme.bodyMedium!
-                                .copyWith(color: JejakRasaColor.tersier.color),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed: () =>
-                                context.read<CameraProvider>().detailScreen(
-                                  context,
-                                  sharedProvider.accessToken!,
-                                  uploadResponse.prediction,
+                      // Format foodName: huruf pertama kapital, sisanya kecil
+                      final formattedFoodName =
+                          uploadResponse.prediction.isNotEmpty
+                          ? uploadResponse.prediction[0].toUpperCase() +
+                                uploadResponse.prediction
+                                    .substring(1)
+                                    .toLowerCase()
+                          : uploadResponse.prediction;
+
+                      return Card(
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        color: Colors.white,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Hasil Analisis",
+                                style: Theme.of(context).textTheme.titleMedium!
+                                    .copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              // Nama makanan
+                              Text(
+                                formattedFoodName,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall!
+                                    .copyWith(
+                                      color: JejakRasaColor.tersier.color,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 6),
+
+                              // Confidence
+                              Text(
+                                "Confidence: ${uploadResponse.confidence.toStringAsFixed(2)}%",
+                                style: Theme.of(context).textTheme.bodyMedium!
+                                    .copyWith(color: Colors.grey[700]),
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Tombol detail
+                              ElevatedButton.icon(
+                                icon: const Icon(Icons.info_outline),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      JejakRasaColor.secondary.color,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
                                 ),
-                            child: Text("Detail food"),
+                                onPressed: () =>
+                                    context.read<CameraProvider>().detailScreen(
+                                      context,
+                                      sharedProvider.accessToken!,
+                                      uploadResponse.prediction,
+                                    ),
+                                label: const Text("Lihat Detail Makanan"),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       );
                     },
                   ),
