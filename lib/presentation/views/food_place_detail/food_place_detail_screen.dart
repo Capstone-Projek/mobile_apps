@@ -77,43 +77,45 @@ class _FoodPlaceDetailScreenState extends State<FoodPlaceDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Stack(
-                    children: [
-                      Image.network(
-                        place.images?.isNotEmpty == true ? place.images!.first.imageUrl : '',
-                        width: double.infinity,
-                        height: 220,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
+                  SafeArea(
+                    child: Stack(
+                      children: [
+                        Image.network(
+                          place.images?.isNotEmpty == true ? place.images!.first.imageUrl : '',
+                          width: double.infinity,
                           height: 220,
-                          color: Colors.grey,
-                          child: const Icon(
-                            Icons.image_not_supported,
-                            size: 60,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 10,
-                        left: 12,
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF26599A).withAlpha(150),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            height: 220,
+                            color: Colors.grey,
                             child: const Icon(
-                              Icons.arrow_back,
-                              color: Colors.white,
+                              Icons.image_not_supported,
+                              size: 60,
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                        Positioned(
+                          top: 10,
+                          left: 12,
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF26599A).withAlpha(150),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Icon(
+                                Icons.arrow_back,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
 
                   Container(
