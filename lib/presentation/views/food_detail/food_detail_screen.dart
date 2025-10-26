@@ -87,7 +87,13 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
           _ytController = YoutubePlayerController.fromVideoId(
             videoId: videoId,
             autoPlay: false,
-            params: const YoutubePlayerParams(showFullscreenButton: true),
+            params: const YoutubePlayerParams(
+              showFullscreenButton: true,
+              enableJavaScript: true,
+              strictRelatedVideos: false,
+              enableCaption: true,
+              origin: 'https://www.youtube-nocookie.com',
+            ),
           );
         }
       }
@@ -102,6 +108,26 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
     _ytController?.close();
     super.dispose();
   }
+
+  void _initializeYoutubeController(String url) {
+    final videoId = YoutubePlayerController.convertUrlToId(url);
+    if (videoId == null) return;
+
+    _ytController?.close();
+
+    _ytController = YoutubePlayerController.fromVideoId(
+      videoId: videoId,
+      autoPlay: false,
+      params: const YoutubePlayerParams(
+        showFullscreenButton: true,
+        enableJavaScript: true,
+        strictRelatedVideos: false,
+        enableCaption: true,
+        origin: 'https://www.youtube-nocookie.com',
+      ),
+    );
+  }
+
 
   Widget _buildMainMedia(Size size) {
     if (media.isEmpty) {
@@ -349,15 +375,20 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                               onTap: () {
                                 setState(() {
                                   activeIndex = index;
-                                  if (item["type"] == "video" &&
-                                      _ytController != null) {
-                                    final videoId = YoutubePlayerController.convertUrlToId(url);
-                                    if (videoId != null) {
-                                      _ytController!.loadVideoById(
-                                        videoId: videoId,
-                                      );
-                                    }
+                                  
+                                  if (item["type"] == "video") {
+                                    _initializeYoutubeController(url);
                                   }
+
+                                  // if (item["type"] == "video" &&
+                                  //     _ytController != null) {
+                                  //   final videoId = YoutubePlayerController.convertUrlToId(url);
+                                  //   if (videoId != null) {
+                                  //     _ytController!.loadVideoById(
+                                  //       videoId: videoId,
+                                  //     );
+                                  //   }
+                                  // }
                                 });
                               },
                               child: Container(
@@ -402,13 +433,6 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
                         ],
                       ),
                     ),
-                    // Padding(
-                    //   padding: const EdgeInsets.symmetric(horizontal: 16),
-                    //   child: Text(
-                    //     "Oleh Joko ndo kondo",
-                    //     style: TextStyle(color: Colors.grey[600], fontSize: 11),
-                    //   ),
-                    // ),
                     const SizedBox(height: 12),
                     DefaultTabController(
                       length: 2,
